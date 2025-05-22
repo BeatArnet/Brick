@@ -102,7 +102,7 @@ try:
     brick_hit_sound = pygame.mixer.Sound(os.path.join(SOUNDS_DIR, "brick_hit.wav")) # z.B. ein kurzer "plop"
     paddle_hit_sound = pygame.mixer.Sound(os.path.join(SOUNDS_DIR, "paddle_hit.wav")) # z.B. ein "pong"
     wall_hit_sound = pygame.mixer.Sound(os.path.join(SOUNDS_DIR, "wall_hit.wav")) # z.B. ein dumpferes "thud"
-    # game_over_sound = pygame.mixer.Sound(os.path.join(SOUNDS_DIR, "game_over.wav")) # Optional
+    game_over_sound = pygame.mixer.Sound(os.path.join(SOUNDS_DIR, "game_over.wav")) # Optional
 except pygame.error as e:
     print(f"Fehler beim Laden der Sounds: {e}. Sounds werden deaktiviert.")
     brick_hit_sound = paddle_hit_sound = wall_hit_sound = None
@@ -253,9 +253,9 @@ while running:
     # Verloren
     if ball_y + BALL_RADIUS > SCREEN_HEIGHT:
         # Hier könnte man einen Game Over Sound spielen oder einen "Game Over" Bildschirm anzeigen
-        # if game_over_sound:
-        #     game_over_sound.play()
-        # pygame.time.wait(1000) # Kurze Pause
+        if game_over_sound:
+            game_over_sound.play()
+        pygame.time.wait(1000) # Kurze Pause
         start_game() # Spiel neu starten
 
     # --- Rendering ---
