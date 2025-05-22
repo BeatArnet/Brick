@@ -85,6 +85,7 @@ BRICK_COLORS = [RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE]
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "assets")
 SOUNDS_DIR = os.path.join(ASSETS_DIR, "sounds")
 IMAGES_DIR = os.path.join(ASSETS_DIR, "images")
+game_over_sound = ""
 
 # Bildschirm initialisieren
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) # RESIZABLE entfernt für Einfachheit
