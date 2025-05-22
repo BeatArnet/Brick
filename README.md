@@ -44,7 +44,7 @@ Brick/
 │ ├─ brick_hit.wav
 │ ├─ paddle_hit.wav
 │ └─ wall_hit.wav
-├─ Brick.py
+└─ Brick.py
 
 > Lege alle Sounds und das Hintergrundbild in die entsprechenden Unterordner!
 
