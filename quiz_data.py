@@ -4,12 +4,20 @@ def get_quiz_data():
     """
     Reads quiz data from an Excel file, transforms it, and returns it as a list of dictionaries.
     """
+    # Define the path to the Excel file
+    excel_file_path = 'Neuer_Arzttarif_Frage_Antwort_Spiel.xlsx'
     try:
-        # Define the path to the Excel file
-        excel_file_path = 'Neuer_Arzttarif_Frage_Antwort_Spiel.xlsx'
-
         # Read the Excel file
         df = pd.read_excel(excel_file_path)
+
+        expected_columns = ['Stichwort', 'Frage', 'Antworten A', 'Antworten B', 'Antworten C', 'korrekte Antwort']
+        actual_columns = df.columns.tolist()
+        missing_columns = [col for col in expected_columns if col not in actual_columns]
+
+        if missing_columns:
+            print(f"Error: The Excel file is missing the following expected columns: {missing_columns}")
+            print(f"The columns found in the Excel file are: {actual_columns}")
+            return []
 
         # Initialize an empty list to store the transformed data
         questions_data = []
