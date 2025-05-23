@@ -1,45 +1,3 @@
-#-------------------------------------------------------------------------------
-# Kurzdokumentation: Bricks Game Extended
-#-------------------------------------------------------------------------------
-#
-# Spielbeschreibung:
-# "Bricks Game Extended" ist eine erweiterte Version des klassischen Breakout-Spiels.
-# Der Spieler steuert ein Paddle am unteren Bildschirmrand und muss einen Ball so
-# abprallen lassen, dass er Blöcke (Bricks) am oberen Bildschirmrand zerstört.
-# Ziel ist es, alle Blöcke zu zerstören und dabei möglichst viele Punkte zu sammeln.
-# Das Spiel endet, wenn der Ball den unteren Bildschirmrand passiert.
-#
-# Steuerung:
-# - Maus: Das Paddle folgt der horizontalen Position des Mauszeigers, solange
-#         sich dieser innerhalb des Spielfensters befindet.
-# - Tastatur (Pfeiltasten):
-#   - Linke Pfeiltaste: Paddle nach links bewegen.
-#   - Rechte Pfeiltaste: Paddle nach rechts bewegen.
-# Die Tastatursteuerung ist immer aktiv, auch wenn die Maus benutzt wird.
-#
-# Features:
-# - Attraktivere Grafik:
-#   - Hintergrundbild für eine ansprechendere Optik.
-#   - Unterschiedliche Farben für die Bricks.
-#   - Abgerundetes Paddle-Design.
-#   - Visuelle Hervorhebung des Balls.
-# - Besserer Sound:
-#   - Eigene Soundeffekte für Kollisionen mit Bricks, Paddle und Wänden.
-#   - Verwendung von pygame.mixer für die Soundwiedergabe.
-# - Verbessertes Cursorverhalten:
-#   - Das Paddle wird per Maus nur bewegt, wenn sich der Cursor innerhalb
-#     des Spielfensters befindet (mittels MOUSEMOTION Event).
-#   - Die Tastatursteuerung bleibt jederzeit aktiv, unabhängig von der
-#     Mausposition.
-# - Dynamischer Ballabprall vom Paddle: Die Richtung des Balls nach dem
-#   Abprallen vom Paddle hängt davon ab, wo der Ball das Paddle trifft.
-# - Punktesystem: Für jeden zerstörten Brick erhält der Spieler Punkte.
-# - Neustart: Das Spiel startet automatisch neu, wenn der Ball verloren geht.
-#
-# Hauptkomponenten des Codes:
-# - Initialisierung: Einrichtung von Pygame, Bildschirm, Farben, Konstanten.
-# - Asset-Ladung: Laden von Bildern und Soundeffekten.
-# - `start_game()`: Initialisiert oder setzt die Spielvariablen für ein neues Spiel zurück.
 # - Spielschleife (`while running`):
 #   - Event-Verarbeitung: Abfrage von Tastatur-, Maus- und Fensterereignissen.
 #   - Spiellogik: Bewegung von Paddle und Ball, Kollisionserkennung.
@@ -59,7 +17,7 @@
 import pygame
 import random
 import os # Für plattformunabhängige Pfade
-from quiz_manager import trigger_quiz_event # <-- MODIFICATION: Import quiz manager
+from quiz_manager import trigger_quiz_event # Importiere die Quiz-Manager-Funktion
 
 # Initialisiere pygame und pygame.mixer
 pygame.init()
@@ -90,7 +48,7 @@ game_over_sound = ""
 
 # Bildschirm initialisieren
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) # RESIZABLE entfernt für Einfachheit
-pygame.display.set_caption("Bricks Game Extended")
+pygame.display.set_caption("Bricks Game")
 
 # Lade Assets
 try:
@@ -175,6 +133,7 @@ def start_game():
             # END MODIFICATION
 
     # Punkte
+    global score
     score = 0
 
 # Spiel starten
@@ -246,7 +205,6 @@ while running:
 
 
     # Kollision mit Bricks
-    global score # <-- MODIFICATION: Ensure we are using the global score to update it
     for brick_item in bricks[:]: # Kopie der Liste für sicheres Entfernen
         if brick_item['visible'] and ball_rect.colliderect(brick_item['rect']):
             brick_item['visible'] = False # Brick "zerstören" (ausblenden statt entfernen für evtl. Effekte)
