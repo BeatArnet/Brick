@@ -59,6 +59,7 @@
 import pygame
 import random
 import os # Für plattformunabhängige Pfade
+from quiz_manager import trigger_quiz_event # <-- MODIFICATION: Import quiz manager
 
 # Initialisiere pygame und pygame.mixer
 pygame.init()
@@ -116,6 +117,8 @@ ball_speed_x, ball_speed_y = 0, 0
 bricks = []
 score = 0
 current_paddle_color = BLUE # Für eventuelle Farbwechsel
+active_bricks_per_column = {} # <-- MODIFICATION: Track active bricks per column
+cleared_quiz_columns = set() # <-- MODIFICATION: Track columns for which quiz has been triggered
 
 # Paddle-Setup
 PADDLE_WIDTH = 120 # Etwas breiter
@@ -139,7 +142,7 @@ BRICK_START_Y = 50
 
 # Funktion für ein neues Spiel
 def start_game():
-    global paddle_x, ball_x, ball_y, ball_speed_x, ball_speed_y, bricks, score, current_paddle_color
+    global paddle_x, ball_x, ball_y, ball_speed_x, ball_speed_y, bricks, score, current_paddle_color, active_bricks_per_column, cleared_quiz_columns # <-- MODIFICATION: Added new globals
 
     # Paddle-Setup
     paddle_x = (SCREEN_WIDTH - PADDLE_WIDTH) // 2
@@ -154,6 +157,9 @@ def start_game():
 
     # Bricks-Setup
     bricks = []
+    active_bricks_per_column.clear() # <-- MODIFICATION: Clear for new game
+    cleared_quiz_columns.clear() # <-- MODIFICATION: Clear for new game
+
     for row in range(BRICK_ROWS):
         row_color = BRICK_COLORS[row % len(BRICK_COLORS)] # Zyklische Farbauswahl pro Reihe
         for col in range(BRICKS_PER_ROW):
@@ -163,7 +169,10 @@ def start_game():
                 BRICK_WIDTH,
                 BRICK_HEIGHT
             )
-            bricks.append({'rect': brick_rect, 'color': row_color, 'visible': True})
+            # <-- MODIFICATION: Store column index and initialize active_bricks_per_column count
+            bricks.append({'rect': brick_rect, 'color': row_color, 'visible': True, 'column_index': col})
+            active_bricks_per_column[col] = active_bricks_per_column.get(col, 0) + 1
+            # END MODIFICATION
 
     # Punkte
     score = 0
@@ -237,16 +246,35 @@ while running:
 
 
     # Kollision mit Bricks
+    global score # <-- MODIFICATION: Ensure we are using the global score to update it
     for brick_item in bricks[:]: # Kopie der Liste für sicheres Entfernen
         if brick_item['visible'] and ball_rect.colliderect(brick_item['rect']):
             brick_item['visible'] = False # Brick "zerstören" (ausblenden statt entfernen für evtl. Effekte)
-            # bricks.remove(brick_item) # Alternative: Komplett entfernen
+            
+            score += 10 # Original score update
+            
+            # <-- MODIFICATION: Column clear detection and quiz trigger
+            column_idx = brick_item['column_index']
+            active_bricks_per_column[column_idx] -= 1
+
+            if active_bricks_per_column[column_idx] == 0 and column_idx not in cleared_quiz_columns:
+                print(f"Column {column_idx} cleared! Triggering quiz event.")
+                # Call quiz event
+                # Make sure screen is updated before quiz, so player sees the game state
+                # This might require a screen update here if quiz_manager doesn't handle it.
+                # For now, assume quiz_manager handles its own UI loop separately or prints to console.
+                
+                # Store current score to pass, then update with new score
+                current_game_score = score 
+                score = trigger_quiz_event(current_game_score) # Update global score
+                
+                cleared_quiz_columns.add(column_idx)
+                print(f"Quiz event finished for column {column_idx}. New score: {score}")
+            # END MODIFICATION
 
             # Ball Richtung ändern
-            # Einfache Umkehrung der y-Geschwindigkeit. Für genauere Kollisionen müsste man
-            # prüfen, von welcher Seite der Ball den Brick trifft.
-            ball_speed_y *= -1
-            score += 10
+            ball_speed_y *= -1 # Original ball direction change
+            
             if brick_hit_sound:
                 brick_hit_sound.play()
             break # Nur ein Brick pro Frame zerstören
