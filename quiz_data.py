@@ -10,7 +10,7 @@ def get_quiz_data():
         # Read the Excel file
         df = pd.read_excel(excel_file_path)
 
-        expected_columns = ['Stichwort', 'Frage', 'Antworten A', 'Antworten B', 'Antworten C', 'korrekte Antwort']
+        expected_columns = ['Stichwort', 'Frage', 'Antwort_1', 'Antwort_2', 'Antwort_3', 'Korrekte_Antwort']
         actual_columns = df.columns.tolist()
         missing_columns = [col for col in expected_columns if col not in actual_columns]
 
@@ -27,9 +27,9 @@ def get_quiz_data():
             # Extract data from the row
             title = row['Stichwort']
             question_text = row['Frage']
-            answers = [row['Antworten A'], row['Antworten B'], row['Antworten C']]
+            answers = [row['Antwort_1'], row['Antwort_2'], row['Antwort_3']]
             # Convert 1-indexed correct answer to 0-indexed
-            correct_answer_index = int(row['korrekte Antwort']) - 1
+            correct_answer_index = int(row['Korrekte_Antwort']) - 1
 
             # Create a dictionary for the current question
             question_dict = {
