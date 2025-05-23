@@ -17,7 +17,8 @@
 import pygame
 import random
 import os # Für plattformunabhängige Pfade
-from quiz_manager import trigger_quiz_event # Importiere die Quiz-Manager-Funktion
+import quiz_manager
+from quiz_ui import QuizPopup # NEW Import
 
 # Initialisiere pygame und pygame.mixer
 pygame.init()
@@ -75,8 +76,14 @@ ball_speed_x, ball_speed_y = 0, 0
 bricks = []
 score = 0
 current_paddle_color = BLUE # Für eventuelle Farbwechsel
-active_bricks_per_column = {} # <-- MODIFICATION: Track active bricks per column
-cleared_quiz_columns = set() # <-- MODIFICATION: Track columns for which quiz has been triggered
+active_bricks_per_column = {} 
+cleared_quiz_columns = set() 
+
+# --- NEW Global State Variables for Quiz ---
+quiz_active = False
+current_quiz_popup = None
+column_for_current_quiz = -1 # To store the column index that triggered the current quiz
+# --- END NEW Global State Variables ---
 
 # Paddle-Setup
 PADDLE_WIDTH = 120 # Etwas breiter
@@ -100,7 +107,9 @@ BRICK_START_Y = 50
 
 # Funktion für ein neues Spiel
 def start_game():
-    global paddle_x, ball_x, ball_y, ball_speed_x, ball_speed_y, bricks, score, current_paddle_color, active_bricks_per_column, cleared_quiz_columns # <-- MODIFICATION: Added new globals
+    global paddle_x, ball_x, ball_y, ball_speed_x, ball_speed_y, bricks, score, current_paddle_color
+    global active_bricks_per_column, cleared_quiz_columns
+    global quiz_active, current_quiz_popup, column_for_current_quiz # NEW globals
 
     # Paddle-Setup
     paddle_x = (SCREEN_WIDTH - PADDLE_WIDTH) // 2
@@ -115,8 +124,13 @@ def start_game():
 
     # Bricks-Setup
     bricks = []
-    active_bricks_per_column.clear() # <-- MODIFICATION: Clear for new game
-    cleared_quiz_columns.clear() # <-- MODIFICATION: Clear for new game
+    active_bricks_per_column.clear() 
+    cleared_quiz_columns.clear() 
+
+    # Reset quiz state variables
+    quiz_active = False
+    current_quiz_popup = None
+    column_for_current_quiz = -1
 
     for row in range(BRICK_ROWS):
         row_color = BRICK_COLORS[row % len(BRICK_COLORS)] # Zyklische Farbauswahl pro Reihe
@@ -149,137 +163,161 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.MOUSEMOTION:
-            # Paddle folgt der Maus nur, wenn die Maus im Fenster ist
-            # (MOUSEMOTION Event feuert nur dann)
-            paddle_x = event.pos[0] - PADDLE_WIDTH // 2
+        
+        if quiz_active and current_quiz_popup:
+            popup_action = current_quiz_popup.handle_event(event)
+            if popup_action == "answer_selected":
+                # Feedback display is managed by popup's update and draw methods
+                pass 
+        elif not quiz_active: # Only handle game events if quiz is not active
+            if event.type == pygame.MOUSEMOTION:
+                paddle_x = event.pos[0] - PADDLE_WIDTH // 2
+            # Keyboard paddle control is handled by pygame.key.get_pressed() below for continuous movement
 
-    # Paddle-Steuerung (Tastatur) - immer aktiv
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:
-        paddle_x -= paddle_speed
-    if keys[pygame.K_RIGHT]:
-        paddle_x += paddle_speed
+    # --- Game Logic (runs if quiz is not active) ---
+    if not quiz_active:
+        # Paddle-Steuerung (Tastatur)
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            paddle_x -= paddle_speed
+        if keys[pygame.K_RIGHT]:
+            paddle_x += paddle_speed
 
-    # Paddle an Bildschirmgrenzen halten
-    paddle_x = max(0, min(SCREEN_WIDTH - PADDLE_WIDTH, paddle_x))
+        # Paddle an Bildschirmgrenzen halten
+        paddle_x = max(0, min(SCREEN_WIDTH - PADDLE_WIDTH, paddle_x))
 
-    # Ball bewegen
-    ball_x += ball_speed_x
-    ball_y += ball_speed_y
+        # Ball bewegen
+        ball_x += ball_speed_x
+        ball_y += ball_speed_y
 
-    # Kollision mit Wänden
-    ball_collided_wall = False
-    if ball_x - BALL_RADIUS <= 0 or ball_x + BALL_RADIUS >= SCREEN_WIDTH:
-        ball_speed_x *= -1
-        ball_x = max(BALL_RADIUS, min(SCREEN_WIDTH - BALL_RADIUS, ball_x)) # Korrektur um Feststecken zu vermeiden
-        ball_collided_wall = True
-    if ball_y - BALL_RADIUS <= 0:
-        ball_speed_y *= -1
-        ball_y = max(BALL_RADIUS, ball_y) # Korrektur
-        ball_collided_wall = True
+        # Kollision mit Wänden
+        ball_collided_wall = False
+        if ball_x - BALL_RADIUS <= 0 or ball_x + BALL_RADIUS >= SCREEN_WIDTH:
+            ball_speed_x *= -1
+            ball_x = max(BALL_RADIUS, min(SCREEN_WIDTH - BALL_RADIUS, ball_x)) 
+            ball_collided_wall = True
+        if ball_y - BALL_RADIUS <= 0:
+            ball_speed_y *= -1
+            ball_y = max(BALL_RADIUS, ball_y) 
+            ball_collided_wall = True
 
-    if ball_collided_wall and wall_hit_sound:
-        wall_hit_sound.play()
+        if ball_collided_wall and wall_hit_sound:
+            wall_hit_sound.play()
 
-    # Paddle und Ball Rechtecke für Kollision
-    paddle_rect = pygame.Rect(paddle_x, paddle_y, PADDLE_WIDTH, PADDLE_HEIGHT)
-    ball_rect = pygame.Rect(ball_x - BALL_RADIUS, ball_y - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2)
+        # Paddle und Ball Rechtecke für Kollision
+        paddle_rect = pygame.Rect(paddle_x, paddle_y, PADDLE_WIDTH, PADDLE_HEIGHT)
+        ball_rect = pygame.Rect(ball_x - BALL_RADIUS, ball_y - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2)
 
-    # Kollision mit Paddle
-    if ball_rect.colliderect(paddle_rect) and ball_speed_y > 0: # Nur wenn Ball von oben kommt
-        ball_speed_y *= -1
-        ball_y = paddle_y - BALL_RADIUS # Position korrigieren, um Feststecken zu verhindern
+        # Kollision mit Paddle
+        if ball_rect.colliderect(paddle_rect) and ball_speed_y > 0: 
+            ball_speed_y *= -1
+            ball_y = paddle_y - BALL_RADIUS 
 
-        # Dynamischer Abprallwinkel
-        # Mitte des Paddles: paddle_x + PADDLE_WIDTH / 2
-        # Mitte des Balls: ball_x
-        offset = (ball_x - (paddle_x + PADDLE_WIDTH / 2)) / (PADDLE_WIDTH / 2) # -1 (links) bis 1 (rechts)
-        ball_speed_x += offset * 2 # Max. Änderung von -2 bis +2 auf x-Geschwindigkeit
-        # Begrenze die maximale horizontale Geschwindigkeit, um das Spiel spielbar zu halten
-        ball_speed_x = max(-6, min(6, ball_speed_x))
+            offset = (ball_x - (paddle_x + PADDLE_WIDTH / 2)) / (PADDLE_WIDTH / 2) 
+            ball_speed_x += offset * 2 
+            ball_speed_x = max(-6, min(6, ball_speed_x))
 
-        if paddle_hit_sound:
-            paddle_hit_sound.play()
-        current_paddle_color = random.choice([c for c in BRICK_COLORS if c != current_paddle_color]) # Paddle Farbe ändern
+            if paddle_hit_sound:
+                paddle_hit_sound.play()
+            current_paddle_color = random.choice([c for c in BRICK_COLORS if c != current_paddle_color])
 
+        # Verloren
+        if ball_y + BALL_RADIUS > SCREEN_HEIGHT:
+            if game_over_sound:
+                game_over_sound.play()
+            pygame.time.wait(1000) 
+            start_game() 
 
-    # Kollision mit Bricks
-    for brick_item in bricks[:]: # Kopie der Liste für sicheres Entfernen
+    # --- Shared Logic (Brick Collision and Quiz Triggering - runs even if quiz will become active this frame) ---
+    # We need ball_rect for brick collision even if game is paused next frame.
+    # If game is paused, ball_rect won't update, but we need its last position for this check.
+    ball_rect = pygame.Rect(ball_x - BALL_RADIUS, ball_y - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2) # Ensure ball_rect is current
+
+    for brick_item in bricks[:]: 
         if brick_item['visible'] and ball_rect.colliderect(brick_item['rect']):
-            brick_item['visible'] = False # Brick "zerstören" (ausblenden statt entfernen für evtl. Effekte)
-            
-            score += 10 # Original score update
-            
-            # <-- MODIFICATION: Column clear detection and quiz trigger
-            column_idx = brick_item['column_index']
-            active_bricks_per_column[column_idx] -= 1
-
-            if active_bricks_per_column[column_idx] == 0 and column_idx not in cleared_quiz_columns:
-                print(f"Column {column_idx} cleared! Triggering quiz event.")
-                # Call quiz event
-                # Make sure screen is updated before quiz, so player sees the game state
-                # This might require a screen update here if quiz_manager doesn't handle it.
-                # For now, assume quiz_manager handles its own UI loop separately or prints to console.
+            if not quiz_active: # Only process brick hit if quiz is not already active
+                brick_item['visible'] = False 
+                score += 10 
                 
-                # Store current score to pass, then update with new score
-                current_game_score = score 
-                score = trigger_quiz_event(current_game_score) # Update global score
+                column_idx = brick_item['column_index']
+                active_bricks_per_column[column_idx] -= 1
+
+                if active_bricks_per_column[column_idx] == 0 and column_idx not in cleared_quiz_columns:
+                    print(f"Column {column_idx} cleared! Preparing quiz...")
+                    question_data = quiz_manager.get_new_quiz_question()
+                    if question_data:
+                        current_quiz_popup = QuizPopup(screen, question_data) 
+                        quiz_active = True
+                        column_for_current_quiz = column_idx # Store which column triggered this
+                        # Pause game sounds/music here (if any)
+                    else:
+                        print("No more questions available or error. Skipping quiz.")
+                        cleared_quiz_columns.add(column_idx) # Mark as attempted/skipped
                 
-                cleared_quiz_columns.add(column_idx)
-                print(f"Quiz event finished for column {column_idx}. New score: {score}")
-            # END MODIFICATION
+                ball_speed_y *= -1 # Ball rebounds
+                if brick_hit_sound:
+                    brick_hit_sound.play()
+                break 
 
-            # Ball Richtung ändern
-            ball_speed_y *= -1 # Original ball direction change
+    # --- Quiz Popup Update Logic (runs if quiz is active) ---
+    if quiz_active and current_quiz_popup:
+        popup_status = current_quiz_popup.update() 
+        if popup_status == "feedback_finished":
+            print("Quiz feedback finished.")
+            selected_idx = current_quiz_popup.selected_answer_index 
+            q_data = current_quiz_popup.question_data 
             
-            if brick_hit_sound:
-                brick_hit_sound.play()
-            break # Nur ein Brick pro Frame zerstören
+            score, was_correct = quiz_manager.check_answer_and_update_score(score, q_data, selected_idx)
+            print(f"Score after quiz: {score}. Correct: {was_correct}")
 
-    # Verloren
-    if ball_y + BALL_RADIUS > SCREEN_HEIGHT:
-        # Hier könnte man einen Game Over Sound spielen oder einen "Game Over" Bildschirm anzeigen
-        if game_over_sound:
-            game_over_sound.play()
-        pygame.time.wait(1000) # Kurze Pause
-        start_game() # Spiel neu starten
+            if column_for_current_quiz != -1:
+                cleared_quiz_columns.add(column_for_current_quiz)
+                print(f"Column {column_for_current_quiz} marked as quiz-cleared.")
+            
+            current_quiz_popup = None
+            quiz_active = False
+            column_for_current_quiz = -1
+            # Resume game sounds/music here (if any)
 
     # --- Rendering ---
     # Hintergrund
     if background_image:
         screen.blit(background_image, (0, 0))
     else:
-        screen.fill(BLACK) # Fallback
+        screen.fill(BLACK) 
 
     # Bricks zeichnen
     for brick_item in bricks:
         if brick_item['visible']:
             pygame.draw.rect(screen, brick_item['color'], brick_item['rect'])
-            pygame.draw.rect(screen, WHITE, brick_item['rect'], 1) # Kleiner Rand für 3D-Effekt
+            pygame.draw.rect(screen, WHITE, brick_item['rect'], 1) 
 
     # Paddle zeichnen
-    pygame.draw.rect(screen, current_paddle_color, paddle_rect, border_radius=PADDLE_CORNER_RADIUS)
-    pygame.draw.rect(screen, WHITE, paddle_rect, 2, border_radius=PADDLE_CORNER_RADIUS) # Rand
+    # Ensure paddle_rect is defined for drawing even if quiz is active (uses last position)
+    paddle_rect_draw = pygame.Rect(paddle_x, paddle_y, PADDLE_WIDTH, PADDLE_HEIGHT)
+    pygame.draw.rect(screen, current_paddle_color, paddle_rect_draw, border_radius=PADDLE_CORNER_RADIUS)
+    pygame.draw.rect(screen, WHITE, paddle_rect_draw, 2, border_radius=PADDLE_CORNER_RADIUS) 
 
-    # Ball zeichnen
+    # Ball zeichnen (uses last position if quiz is active)
     pygame.draw.circle(screen, BALL_COLOR, (int(ball_x), int(ball_y)), BALL_RADIUS)
-    pygame.draw.circle(screen, WHITE, (int(ball_x), int(ball_y)), BALL_RADIUS, 1) # Rand
+    pygame.draw.circle(screen, WHITE, (int(ball_x), int(ball_y)), BALL_RADIUS, 1) 
 
-    # Punkte anzeigen
+    # Punkte anzeigen (always visible, or can be part of non-quiz UI)
     score_text = game_font.render(f"Score: {score}", True, WHITE)
     screen.blit(score_text, (10, 10))
 
-    # Alle Bricks zerstört?
-    if all(not brick['visible'] for brick in bricks) and bricks: # Prüfen ob bricks nicht leer ist
-        # Hier könnte eine "You Win" Nachricht kommen
+    # If quiz is active, draw popup on top
+    if quiz_active and current_quiz_popup:
+        current_quiz_popup.draw()
+    # "YOU WIN!" logic, only if quiz is not active
+    elif not quiz_active and all(not brick['visible'] for brick in bricks) and bricks: 
         win_text = game_font.render("YOU WIN!", True, YELLOW)
         text_rect = win_text.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 50))
         screen.blit(win_text, text_rect)
         restart_text = game_font.render("Press any key to restart", True, WHITE)
         restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2 + 0))
         screen.blit(restart_text, restart_rect)
-        pygame.display.flip() # Anzeige aktualisieren
+        pygame.display.flip() 
         
         waiting_for_key = True
         while waiting_for_key:
@@ -290,9 +328,8 @@ while running:
                 if event.type == pygame.KEYDOWN:
                     start_game()
                     waiting_for_key = False
-            if not running: break # Aus äußerer Schleife ausbrechen, wenn Spiel beendet wurde
-            clock.tick(15) # CPU nicht überlasten beim Warten
-
+            if not running: break 
+            clock.tick(15) 
 
     # Aktualisieren
     pygame.display.flip()

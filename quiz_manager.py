@@ -1,168 +1,74 @@
-import random
 from quiz_data import get_quiz_data
-import quiz_ui # Required for the test block's mocking
+import random
 
-def trigger_quiz_event(current_score):
-    """
-    Triggers a quiz event: selects a random question, runs it, and updates the score.
+# This list will store questions. It's loaded once or as needed.
+questions_data_cache = []
+used_question_indices = set() # To avoid repeating questions in a session
 
+def load_questions_if_needed():
+    global questions_data_cache, used_question_indices
+    if not questions_data_cache: # Only load if empty
+        print("Loading quiz questions for the first time...")
+        questions_data_cache = get_quiz_data()
+        if not questions_data_cache:
+            print("Warning: No quiz questions loaded from quiz_data.py!")
+        else:
+            print(f"Successfully loaded {len(questions_data_cache)} questions.")
+            used_question_indices.clear() # Reset used questions if reloading
+
+def get_new_quiz_question():
+    '''
+    Loads questions if necessary, selects an unused question, and returns its data.
+    Returns None if no questions are available or all have been used.
+    '''
+    global questions_data_cache, used_question_indices
+    load_questions_if_needed()
+
+    if not questions_data_cache:
+        return None
+
+    available_indices = [i for i, q in enumerate(questions_data_cache) if i not in used_question_indices]
+
+    if not available_indices:
+        print("Warning: All quiz questions have been used. Resetting if you want to continue playing with repeated questions.")
+        # Optional: Reset used_question_indices here if you want questions to repeat
+        # used_question_indices.clear()
+        # available_indices = list(range(len(questions_data_cache)))
+        # if not available_indices: return None # Still no questions
+        return None # For now, don't repeat; game can decide how to handle this
+
+    selected_idx = random.choice(available_indices)
+    used_question_indices.add(selected_idx)
+    return questions_data_cache[selected_idx]
+
+def check_answer_and_update_score(current_score, question_data, selected_answer_index):
+    '''
+    Checks if the selected answer is correct and updates the score.
     Args:
-        current_score (int): The player's current score.
-
+        current_score (int): The player's score before the quiz.
+        question_data (dict): The data for the question that was asked.
+        selected_answer_index (int): The index of the answer chosen by the player. Nullable if no answer.
     Returns:
-        int: The updated score after the quiz event.
-    """
-    questions = get_quiz_data()
+        new_score (int): The score after the quiz.
+        was_correct (bool): True if the answer was correct, False otherwise.
+    '''
+    if question_data is None or selected_answer_index is None: # Handle case where no answer was made or no question
+        print("Quiz was skipped or no answer provided. No score change.")
+        return current_score, False 
 
-    if not questions:
-        print("Warning: No quiz questions loaded! Skipping quiz event.")
-        return current_score
+    correct_idx = question_data['correct_answer_index']
+    was_correct = (selected_answer_index == correct_idx)
 
-    selected_question = random.choice(questions)
-    
-    # Ensure the selected question has all necessary keys, especially 'correct_answer_index'
-    # This is a defensive check. quiz_data.py should ideally ensure this.
-    if 'title' not in selected_question or \
-       'question' not in selected_question or \
-       'answers' not in selected_question or \
-       'correct_answer_index' not in selected_question:
-        print(f"Warning: Selected question is malformed: {selected_question.get('title', 'Unknown Title')}. Skipping quiz event.")
-        return current_score
-
-    print("\nStarting quiz event...")
-    is_correct = quiz_ui.run_quiz_question(selected_question)
-
-    if is_correct:
-        print("Answer was correct! +100 points.")
-        current_score += 100
+    if was_correct:
+        new_score = current_score + 50 # Example: 50 points for a correct answer
+        print(f"Answer was correct! Score +50. New score: {new_score}")
     else:
-        print("Answer was incorrect. No points awarded.")
+        new_score = current_score - 20 # Example: -20 points for an incorrect answer
+        new_score = max(0, new_score) # Score shouldn't go below 0
+        print(f"Answer was incorrect. Score -20. New score: {new_score}")
     
-    return current_score
+    return new_score, was_correct
 
-if __name__ == '__main__':
-    # --- Test block for trigger_quiz_event ---
-
-    # Mocking functions for quiz_ui.run_quiz_question
-    def mock_run_quiz_question_correct(question_data):
-        print(f"Mocking quiz for: {question_data['title']} - Simulating CORRECT Answer")
-        # Simulate the parts of run_quiz_question that trigger_quiz_event expects:
-        # 1. Displaying the question (simplified for mock)
-        print(f"\n--- {question_data['title']} ---")
-        print(f"\n{question_data['question']}")
-        answer_labels = ['A', 'B', 'C']
-        for i, answer in enumerate(question_data['answers']):
-            if i < len(answer_labels): print(f"{answer_labels[i]}. {answer}")
-            else: print(f"?. {answer}")
-        # 2. Getting user input (skipped in mock, assumed correct)
-        print(f"\nEnter your answer (A, B, C): {answer_labels[question_data['correct_answer_index']]}") # Simulate choosing correctly
-        # 3. Feedback (simplified)
-        print("\n--- Feedback ---")
-        print(f"Your answer: {question_data['answers'][question_data['correct_answer_index']]} (Correct!)")
-        # 4. "Press Enter" (skipped in mock)
-        # print("\nPress Enter to continue...") # Not strictly needed for trigger_quiz_event logic
-        return True
-
-    def mock_run_quiz_question_incorrect(question_data):
-        print(f"Mocking quiz for: {question_data['title']} - Simulating INCORRECT Answer")
-        # Simulate parts of run_quiz_question
-        print(f"\n--- {question_data['title']} ---")
-        print(f"\n{question_data['question']}")
-        answer_labels = ['A', 'B', 'C']
-        for i, answer in enumerate(question_data['answers']):
-            if i < len(answer_labels): print(f"{answer_labels[i]}. {answer}")
-            else: print(f"?. {answer}")
-        
-        # Simulate choosing an incorrect answer
-        incorrect_choice_index = (question_data['correct_answer_index'] + 1) % len(question_data['answers'])
-        print(f"\nEnter your answer (A, B, C): {answer_labels[incorrect_choice_index]}") 
-
-        print("\n--- Feedback ---")
-        print(f"Your answer: {question_data['answers'][incorrect_choice_index]} (Incorrect)")
-        print(f"Correct answer: {question_data['answers'][question_data['correct_answer_index']]}")
-        # print("\nPress Enter to continue...")
-        return False
-
-    # Store the original run_quiz_question function
-    original_run_quiz_question_func = quiz_ui.run_quiz_question
-
-    print("--- Testing trigger_quiz_event ---")
-
-    # Test 1: Correct answer scenario
-    print("\n--- Test 1: Correct Answer Scenario ---")
-    quiz_ui.run_quiz_question = mock_run_quiz_question_correct
-    test_score_correct = 0
-    print(f"Initial score: {test_score_correct}")
-    updated_score_correct = trigger_quiz_event(test_score_correct)
-    print(f"Score after 'correct' quiz: {updated_score_correct}")
-    if updated_score_correct == 100:
-        print("Test 1 PASSED")
-    else:
-        print(f"Test 1 FAILED (Expected 100, got {updated_score_correct})")
-
-    # Restore original function
-    quiz_ui.run_quiz_question = original_run_quiz_question_func 
-
-    # Test 2: Incorrect answer scenario
-    print("\n--- Test 2: Incorrect Answer Scenario ---")
-    quiz_ui.run_quiz_question = mock_run_quiz_question_incorrect
-    test_score_incorrect = 50 # Start with some score
-    print(f"Initial score: {test_score_incorrect}")
-    updated_score_incorrect = trigger_quiz_event(test_score_incorrect)
-    print(f"Score after 'incorrect' quiz: {updated_score_incorrect}")
-    if updated_score_incorrect == 50: # Score should not change
-        print("Test 2 PASSED")
-    else:
-        print(f"Test 2 FAILED (Expected 50, got {updated_score_incorrect})")
-
-    # Restore original function (important if more tests followed or for interactive use)
-    quiz_ui.run_quiz_question = original_run_quiz_question_func
-
-    # Test 3: No questions loaded scenario
-    print("\n--- Test 3: No Questions Loaded Scenario ---")
-    
-    # Mock get_quiz_data to return an empty list
-    original_get_quiz_data = get_quiz_data # Save original
-    # Need to be able to modify what quiz_manager's get_quiz_data sees
-    # This requires quiz_manager to import get_quiz_data in a way that can be mocked,
-    # or to pass get_quiz_data as a dependency.
-    # For simplicity, let's assume quiz_data.py might be empty or fail.
-    # The current import `from quiz_data import get_quiz_data` makes it hard to mock
-    # get_quiz_data directly for quiz_manager without also changing quiz_data.py.
-    
-    # A practical way to test this is to ensure 'Neuer_Arzttarif_Frage_Antwort_Spiel.xlsx' 
-    # is temporarily unavailable or quiz_data.get_quiz_data() is modified to return [].
-    # Since I can't modify external files or easily re-import, I'll simulate the effect
-    # by temporarily making the questions list empty if possible, or note this limitation.
-    
-    # For now, this test relies on the actual quiz_data.py. If it loads questions,
-    # this specific path won't be tested by this mock.
-    # A more robust way would be to inject get_quiz_data as a dependency to trigger_quiz_event.
-    
-    # Let's try to directly mock the get_quiz_data imported by quiz_manager
-    # This is tricky because of `from quiz_data import get_quiz_data`
-    # We would need to mock it in the quiz_manager's namespace.
-    import sys
-    # If quiz_data is already imported, its functions are already bound.
-    # A more advanced mocking library like unittest.mock would handle this better.
-    
-    # For this environment, I will describe the test.
-    # To test the "no questions loaded" scenario:
-    # 1. Ensure quiz_data.get_quiz_data() would return an empty list (e.g., by having no Excel file).
-    # 2. Call trigger_quiz_event.
-    # 3. Verify the score remains unchanged and a warning is printed.
-    # This part is harder to automate perfectly here without changing quiz_data.py or using a mock library.
-    # The code has the `if not questions:` check, so the logic is there.
-    print("Test 3: 'No questions loaded' scenario relies on quiz_data.get_quiz_data() returning empty.")
-    print("If questions are loaded from Excel, this path isn't fully tested by this script alone.")
-    # Assuming we could make get_quiz_data return [] for a moment:
-    # temp_score_no_q = 75
-    # print(f"Initial score: {temp_score_no_q}")
-    # updated_score_no_q = trigger_quiz_event(temp_score_no_q) # Assuming get_quiz_data returns []
-    # print(f"Score after 'no questions' quiz: {updated_score_no_q}") # Should be 75
-    # if updated_score_no_q == temp_score_no_q:
-    # print("Test 3 conceptually PASSED (if no questions were loaded)")
-    # else:
-    # print("Test 3 conceptually FAILED")
-    
-    print("\n--- End of tests ---")
+# Any old trigger_quiz_event(score) function or similar is now removed.
+# The new functions (get_new_quiz_question, check_answer_and_update_score) 
+# will be orchestrated by the main game loop in Brick.py.
