@@ -722,9 +722,9 @@ Questions: ${questionsAnsweredCorrectly} correct / ${questionsAnsweredTotal} tot
         return;
     }
 
-    summaryTitle.textContent = "YOU WIN!";
-    summaryScoreDisplay.textContent = `Final Score: ${score}`;
-    summaryQuizStatsDisplay.textContent = `Questions: ${questionsAnsweredCorrectly} correct / ${questionsAnsweredTotal} total`;
+    summaryTitle.textContent = "Sie haben gewonnen";
+    summaryScoreDisplay.textContent = `Score: ${score}`;
+    summaryQuizStatsDisplay.textContent = `Fragen: ${questionsAnsweredCorrectly} korrekt / ${questionsAnsweredTotal} total`;
     
     summaryPopup.style.display = 'block';
     // Game loop is effectively paused because checkWinCondition is called from update,
