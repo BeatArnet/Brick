@@ -1,0 +1,78 @@
+/* Body Styling */
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+/* Game Container */
+#gameContainer {
+    position: relative;
+    border: 1px solid #ccc; /* Optional border */
+}
+
+/* Canvas */
+#gameCanvas {
+    display: block;
+    border: 1px solid #000; /* Optional border */
+}
+
+/* Score Display */
+#scoreDisplay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 24px;
+    color: #333;
+}
+
+/* Quiz Popup */
+#quizPopup {
+    display: none; /* Hidden by default, will be shown by JavaScript */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 500px;
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 1000; /* Ensure it's on top of other content */
+}
+
+/* Quiz Elements Styling */
+#quizTitle {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+#quizQuestion {
+    margin-bottom: 15px;
+}
+
+#quizAnswers button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    text-align: left; /* Align text to the left for better readability */
+}
+
+#quizAnswers button:hover {
+    background-color: #e0e0e0;
+}
+
+#quizFeedback {
+    margin-top: 15px;
+    font-weight: bold;
+}

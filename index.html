@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brick Breaker Quiz Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="scoreDisplay">Score: 0</div>
+    </div>
+
+    <div id="quizPopup" style="display: none;">
+        <div id="quizTitle">Quiz Title</div>
+        <div id="quizQuestion">Quiz Question</div>
+        <div id="quizAnswers">
+            <!-- Answer buttons will be populated by JavaScript -->
+        </div>
+        <div id="quizFeedback"></div>
+    </div>
+
+    <script src="game.js" defer></script>
+    <!-- <script src="quiz.js" defer></script> -->
+</body>
+</html>
