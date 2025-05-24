@@ -78,7 +78,7 @@ class QuizPopup:
 
         # Answers
         self.answer_rects = []
-        self.answer_surfs = []
+        self.answer_surfs = [] # Will now be a list of lists of surfaces
         
         # Calculate available height and positioning for answers
         question_block_height = sum(surf.get_height() for surf in self.question_lines_surfs)
@@ -114,9 +114,16 @@ class QuizPopup:
                 ans_height
             )
             self.answer_rects.append(ans_rect)
-            # Ensure answer text is a string before rendering
-            ans_surf = self.ANSWER_FONT.render(str(answer_text), True, TEXT_COLOR)
-            self.answer_surfs.append(ans_surf)
+            
+            # Wrap answer text
+            # Max width for answer text, allowing for 10px padding on each side within the answer box
+            answer_text_max_width = ans_rect.width - 20 
+            wrapped_answer_lines = self._render_wrapped_text(
+                str(answer_text), 
+                self.ANSWER_FONT, 
+                answer_text_max_width
+            )
+            self.answer_surfs.append(wrapped_answer_lines)
 
         self.selected_answer_index = None
         self.feedback_mode = False
@@ -201,11 +208,16 @@ class QuizPopup:
             # Draw border for answer box
             pygame.draw.rect(self.screen, BORDER_COLOR, ans_rect, 1, border_radius=10) 
 
-            # Blit answer text
-            ans_surf = self.answer_surfs[i]
-            # Center the text inside the answer rectangle
-            ans_text_rect = ans_surf.get_rect(center=ans_rect.center)
-            self.screen.blit(ans_surf, ans_text_rect)
+            # Blit wrapped answer text
+            answer_lines_surfs = self.answer_surfs[i]
+            if answer_lines_surfs: # Check if there's anything to render
+                total_text_height = sum(line_surf.get_height() for line_surf in answer_lines_surfs)
+                current_y = ans_rect.centery - total_text_height // 2
+
+                for line_surf in answer_lines_surfs:
+                    line_text_rect = line_surf.get_rect(centerx=ans_rect.centerx, top=current_y)
+                    self.screen.blit(line_surf, line_text_rect)
+                    current_y += line_surf.get_height()
             
     def handle_event(self, event):
         if self.feedback_mode: # Do not process clicks if feedback is active
