@@ -188,6 +188,7 @@ clock = pygame.time.Clock()
 game_font = pygame.font.SysFont('Consolas', 30) # Besser lesbare Schriftart
 
 while running:
+    
     # Events verarbeiten
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -205,6 +206,7 @@ while running:
 
     # --- Game Logic (runs if quiz is not active) ---
     if not quiz_active:
+        # boost_start_time is read, not assigned. paddle_x handled by key/mouse events. score is read for display.
         # Paddle-Steuerung (Tastatur)
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
@@ -216,8 +218,9 @@ while running:
         paddle_x = max(0, min(SCREEN_WIDTH - PADDLE_WIDTH, paddle_x))
 
         # --- Speed Boost/Penalty Duration Management ---
-        global ball_speed_boost_active, ball_speed_x, ball_speed_y, original_ball_speed_x, original_ball_speed_y, boost_start_time
+        # global ball_speed_boost_active, ball_speed_x, ball_speed_y, original_ball_speed_x, original_ball_speed_y, boost_start_time # Moved into the if block
         if ball_speed_boost_active:
+            # global ball_speed_boost_active, ball_speed_x, ball_speed_y, original_ball_speed_x, original_ball_speed_y, boost_start_time # This is now covered by the line above
             current_time = pygame.time.get_ticks()
             if current_time - boost_start_time >= 10000: # 10 seconds
                 # print("Speed penalty duration over. Resetting ball speed.") # Original print
@@ -321,8 +324,9 @@ while running:
             print(f"Score after quiz: {score}. Correct: {was_correct}")
 
             # --- Speed Penalty Logic ---
-            global ball_speed_boost_active, boost_start_time, original_ball_speed_x, original_ball_speed_y, ball_speed_x, ball_speed_y
+            # global ball_speed_boost_active, boost_start_time, original_ball_speed_x, original_ball_speed_y, ball_speed_x, ball_speed_y # Moved into the if block
             if not was_correct and not ball_speed_boost_active: # Apply penalty if answer was wrong and no boost is currently active
+                # global ball_speed_boost_active, boost_start_time, original_ball_speed_x, original_ball_speed_y, ball_speed_x, ball_speed_y # This is now covered by the line above
                 # print("Applying speed penalty for incorrect answer.") # Original print
                 # Store original speeds *before* modification for the print statement
                 temp_orig_x_for_print = ball_speed_x
