@@ -22,8 +22,8 @@ BORDER_COLOR = (80, 80, 80)       # Dark gray border
 # --- Font Definitions ---
 # It's good to check for font availability, or use a default
 DEFAULT_FONT_STYLE = 'Arial' # A common default font
-QUESTION_FONT_SIZE = 20
-ANSWER_FONT_SIZE = 22
+QUESTION_FONT_SIZE = 16
+ANSWER_FONT_SIZE = 14
 TITLE_FONT_SIZE = 30
 
 # Helper to create fonts, trying preferred then falling back to default
