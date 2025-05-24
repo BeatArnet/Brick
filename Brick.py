@@ -40,6 +40,7 @@ PURPLE = (128, 0, 128)
 CYAN = (0, 255, 255)
 
 BRICK_COLORS = [RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE]
+PINK = (255, 192, 203) # New color for question bricks
 
 # Asset Pfade (erstelle einen Ordner "assets" im selben Verzeichnis wie das Skript)
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "assets")
@@ -76,14 +77,22 @@ ball_speed_x, ball_speed_y = 0, 0
 bricks = []
 score = 0
 current_paddle_color = BLUE # Für eventuelle Farbwechsel
-active_bricks_per_column = {} 
-cleared_quiz_columns = set() 
+# active_bricks_per_column = {} # No longer needed for column-based quiz
+# cleared_quiz_columns = set() # No longer needed
 
 # --- NEW Global State Variables for Quiz ---
 quiz_active = False
 current_quiz_popup = None
-column_for_current_quiz = -1 # To store the column index that triggered the current quiz
-# --- END NEW Global State Variables ---
+# column_for_current_quiz = -1 # No longer needed
+brick_hit_count = 0 # New counter for brick hits
+next_question_brick_target = 0 # Target for next question brick
+
+# --- Global Variables for Speed Boost/Penalty ---
+ball_speed_boost_active = False
+boost_start_time = 0
+original_ball_speed_x = 0
+original_ball_speed_y = 0
+# --- END Global Variables for Speed Boost/Penalty ---
 
 # Paddle-Setup
 PADDLE_WIDTH = 120 # Etwas breiter
@@ -108,8 +117,10 @@ BRICK_START_Y = 50
 # Funktion für ein neues Spiel
 def start_game():
     global paddle_x, ball_x, ball_y, ball_speed_x, ball_speed_y, bricks, score, current_paddle_color
-    global active_bricks_per_column, cleared_quiz_columns
-    global quiz_active, current_quiz_popup, column_for_current_quiz # NEW globals
+    # global active_bricks_per_column, cleared_quiz_columns # No longer needed
+    global quiz_active, current_quiz_popup # column_for_current_quiz removed
+    global brick_hit_count, next_question_brick_target # NEW globals
+    global ball_speed_boost_active, boost_start_time, original_ball_speed_x, original_ball_speed_y # Speed penalty globals
 
     # Paddle-Setup
     paddle_x = (SCREEN_WIDTH - PADDLE_WIDTH) // 2
@@ -124,27 +135,45 @@ def start_game():
 
     # Bricks-Setup
     bricks = []
-    active_bricks_per_column.clear() 
-    cleared_quiz_columns.clear() 
+    # active_bricks_per_column.clear() # No longer needed
+    # cleared_quiz_columns.clear() # No longer needed
 
     # Reset quiz state variables
     quiz_active = False
     current_quiz_popup = None
-    column_for_current_quiz = -1
+    # column_for_current_quiz = -1 # No longer needed
+    
+    brick_hit_count = 0 # Initialize brick hit counter
+    next_question_brick_target = random.randint(6, 8) # Initial target for the first question brick
+    created_brick_count = 0
+
+    # Reset speed penalty variables
+    ball_speed_boost_active = False
+    boost_start_time = 0
+    # original_ball_speed_x and original_ball_speed_y are set when penalty activates
+
 
     for row in range(BRICK_ROWS):
-        row_color = BRICK_COLORS[row % len(BRICK_COLORS)] # Zyklische Farbauswahl pro Reihe
+        row_color_default = BRICK_COLORS[row % len(BRICK_COLORS)] # Zyklische Farbauswahl pro Reihe
         for col in range(BRICKS_PER_ROW):
+            created_brick_count += 1
             brick_rect = pygame.Rect(
                 BRICK_START_X + col * (BRICK_WIDTH + BRICK_PADDING),
                 BRICK_START_Y + row * (BRICK_HEIGHT + BRICK_PADDING),
                 BRICK_WIDTH,
                 BRICK_HEIGHT
             )
-            # <-- MODIFICATION: Store column index and initialize active_bricks_per_column count
-            bricks.append({'rect': brick_rect, 'color': row_color, 'visible': True, 'column_index': col})
-            active_bricks_per_column[col] = active_bricks_per_column.get(col, 0) + 1
-            # END MODIFICATION
+            brick_item = {'rect': brick_rect, 'color': row_color_default, 'visible': True}
+            # Removed 'column_index': col as it's not directly used for quiz trigger anymore
+            # active_bricks_per_column[col] = active_bricks_per_column.get(col, 0) + 1 # No longer needed
+
+            if created_brick_count == next_question_brick_target:
+                brick_item['is_question_brick'] = True
+                brick_item['color'] = WHITE # Mark question brick with WHITE color
+                next_question_brick_target += random.randint(6, 8)
+                # print(f"Brick at row {row}, col {col} is a question brick. Next target: {next_question_brick_target}") # Original print
+                print(f"INFO: Brick at ({row},{col}) designated as a question brick. Target ID: {created_brick_count}. Next target: {next_question_brick_target}")
+            bricks.append(brick_item)
 
     # Punkte
     global score
@@ -185,6 +214,18 @@ while running:
 
         # Paddle an Bildschirmgrenzen halten
         paddle_x = max(0, min(SCREEN_WIDTH - PADDLE_WIDTH, paddle_x))
+
+        # --- Speed Boost/Penalty Duration Management ---
+        global ball_speed_boost_active, ball_speed_x, ball_speed_y, original_ball_speed_x, original_ball_speed_y, boost_start_time
+        if ball_speed_boost_active:
+            current_time = pygame.time.get_ticks()
+            if current_time - boost_start_time >= 10000: # 10 seconds
+                # print("Speed penalty duration over. Resetting ball speed.") # Original print
+                print(f"INFO: Speed boost ended. Restoring original speed to: ({original_ball_speed_x},{original_ball_speed_y})")
+                ball_speed_x = original_ball_speed_x
+                ball_speed_y = original_ball_speed_y
+                ball_speed_boost_active = False
+        # --- End Speed Boost/Penalty Duration Management ---
 
         # Ball bewegen
         ball_x += ball_speed_x
@@ -233,50 +274,93 @@ while running:
     # If game is paused, ball_rect won't update, but we need its last position for this check.
     ball_rect = pygame.Rect(ball_x - BALL_RADIUS, ball_y - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2) # Ensure ball_rect is current
 
-    for brick_item in bricks[:]: 
+    for brick_item in bricks[:]:
         if brick_item['visible'] and ball_rect.colliderect(brick_item['rect']):
             if not quiz_active: # Only process brick hit if quiz is not already active
-                brick_item['visible'] = False 
-                score += 10 
-                
-                column_idx = brick_item['column_index']
-                active_bricks_per_column[column_idx] -= 1
+                brick_item['visible'] = False
+                score += 10
+                brick_hit_count += 1 # Increment hit count
 
-                if active_bricks_per_column[column_idx] == 0 and column_idx not in cleared_quiz_columns:
-                    print(f"Column {column_idx} cleared! Preparing quiz...")
+                # column_idx = brick_item['column_index'] # No longer needed
+                # active_bricks_per_column[column_idx] -= 1 # No longer needed
+
+                # REMOVED: Column cleared quiz trigger
+                # if active_bricks_per_column[column_idx] == 0 and column_idx not in cleared_quiz_columns:
+                #     print(f"Column {column_idx} cleared! Preparing quiz...")
+                #     # ... (old column quiz logic removed)
+
+                # NEW: Question brick quiz trigger
+                if brick_item.get('is_question_brick'):
+                    # print(f"Question brick hit! Current hit_count: {brick_hit_count}") # Original print
+                    print(f"INFO: Question brick hit! Triggering quiz for brick at {brick_item['rect'].topleft}.")
                     question_data = quiz_manager.get_new_quiz_question()
                     if question_data:
-                        current_quiz_popup = QuizPopup(screen, question_data) 
+                        current_quiz_popup = QuizPopup(screen, question_data)
                         quiz_active = True
-                        column_for_current_quiz = column_idx # Store which column triggered this
+                        # column_for_current_quiz = column_idx # No longer needed
                         # Pause game sounds/music here (if any)
                     else:
                         print("No more questions available or error. Skipping quiz.")
-                        cleared_quiz_columns.add(column_idx) # Mark as attempted/skipped
-                
+                        # cleared_quiz_columns.add(column_idx) # No longer needed
+                    brick_item['is_question_brick'] = False # Avoid re-triggering
+
                 ball_speed_y *= -1 # Ball rebounds
                 if brick_hit_sound:
                     brick_hit_sound.play()
-                break 
+                break # Process one brick hit per frame
 
     # --- Quiz Popup Update Logic (runs if quiz is active) ---
     if quiz_active and current_quiz_popup:
-        popup_status = current_quiz_popup.update() 
+        popup_status = current_quiz_popup.update()
         if popup_status == "feedback_finished":
             print("Quiz feedback finished.")
-            selected_idx = current_quiz_popup.selected_answer_index 
-            q_data = current_quiz_popup.question_data 
-            
+            selected_idx = current_quiz_popup.selected_answer_index
+            q_data = current_quiz_popup.question_data
+
             score, was_correct = quiz_manager.check_answer_and_update_score(score, q_data, selected_idx)
             print(f"Score after quiz: {score}. Correct: {was_correct}")
 
-            if column_for_current_quiz != -1:
-                cleared_quiz_columns.add(column_for_current_quiz)
-                print(f"Column {column_for_current_quiz} marked as quiz-cleared.")
+            # --- Speed Penalty Logic ---
+            global ball_speed_boost_active, boost_start_time, original_ball_speed_x, original_ball_speed_y, ball_speed_x, ball_speed_y
+            if not was_correct and not ball_speed_boost_active: # Apply penalty if answer was wrong and no boost is currently active
+                # print("Applying speed penalty for incorrect answer.") # Original print
+                # Store original speeds *before* modification for the print statement
+                temp_orig_x_for_print = ball_speed_x
+                temp_orig_y_for_print = ball_speed_y
+                original_ball_speed_x = ball_speed_x 
+                original_ball_speed_y = ball_speed_y
+                
+                ball_speed_x *= 1.5
+                ball_speed_y *= 1.5
+                
+                # Ensure speed doesn't become excessively high or zero if it was very low.
+                # Cap the speed if necessary, e.g., max speed of 1.5 * 6 = 9
+                max_abs_speed = 9 
+                ball_speed_x = max(-max_abs_speed, min(max_abs_speed, ball_speed_x))
+                ball_speed_y = max(-max_abs_speed, min(max_abs_speed, ball_speed_y))
+
+                # If speeds were zero, applying 1.5x will keep them zero. Give a minimum boost.
+                if original_ball_speed_x == 0 and original_ball_speed_y == 0:
+                    # This case should ideally not happen if ball is moving, but as a fallback
+                    ball_speed_x = random.choice([-3, 3]) * 1.5
+                    ball_speed_y = -3 * 1.5
+                elif original_ball_speed_x == 0: # If only x was zero
+                    ball_speed_x = random.choice([-1, 1]) * 1.5 # Give some lateral movement
+                elif original_ball_speed_y == 0: # If only y was zero (e.g. stuck horizontally)
+                    ball_speed_y = (1 if ball_y < SCREEN_HEIGHT / 2 else -1) * 1.5 # Push towards center
+                
+                print(f"INFO: Incorrect answer. Applying 1.5x speed boost for 10s. Original speed: ({temp_orig_x_for_print},{temp_orig_y_for_print}), New speed: ({ball_speed_x},{ball_speed_y})")
+                ball_speed_boost_active = True
+                boost_start_time = pygame.time.get_ticks()
+            # --- End Speed Penalty Logic ---
+
+            # if column_for_current_quiz != -1: # No longer needed
+            #     cleared_quiz_columns.add(column_for_current_quiz) # No longer needed
+            #     print(f"Column {column_for_current_quiz} marked as quiz-cleared.") # No longer needed
             
             current_quiz_popup = None
             quiz_active = False
-            column_for_current_quiz = -1
+            # column_for_current_quiz = -1 # No longer needed
             # Resume game sounds/music here (if any)
 
     # --- Rendering ---
