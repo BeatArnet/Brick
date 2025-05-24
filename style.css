@@ -27,7 +27,23 @@ body {
     top: 10px;
     left: 10px;
     font-size: 24px;
-    color: #333;
+    color: white; /* Changed to white */
+    text-shadow: 
+        2px 2px 3px rgba(0, 0, 0, 0.7); /* A slightly more offset, slightly blurred dark shadow */
+}
+
+#quizAnswers .quiz-answer-btn.selected-correct {
+    background-color: lightgreen !important;
+    border-color: darkgreen;
+}
+
+#quizAnswers .quiz-answer-btn.selected-incorrect {
+    background-color: lightcoral !important;
+    border-color: darkred;
+}
+
+#quizAnswers .quiz-answer-btn.actual-correct {
+    border: 3px solid darkgreen !important;
 }
 
 /* Quiz Popup */
@@ -75,4 +91,37 @@ body {
 #quizFeedback {
     margin-top: 15px;
     font-weight: bold;
+}
+
+/* Game Summary Popup */
+#gameSummaryPopup {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    background-color: #f0f0f0; /* Light background */
+    border: 2px solid #333;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    text-align: center;
+    z-index: 1001; /* Ensure it's on top if quiz popup is 1000 */
+}
+#gameSummaryPopup h2 { 
+    margin-top: 0; 
+}
+#gameSummaryPopup p {
+    margin: 10px 0;
+}
+#gameSummaryPopup button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+#gameSummaryPopup button:hover {
+    background-color: #45a049;
 }

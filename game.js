@@ -24,6 +24,8 @@ const PADDLE_COLORS = ["#0095DD", "#DD0095", "#95DD00", "#DD9500"]; // Some padd
 // Score
 let score = 0;
 const scoreDisplay = document.getElementById('scoreDisplay');
+const SCORE_FOR_CORRECT_QUIZ_ANSWER = 50;
+const SCORE_FOR_INCORRECT_QUIZ_ANSWER = -20;
 
 // AudioContext and Sound Buffers
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -37,6 +39,11 @@ const soundFiles = {
     'game_over': 'assets/sounds/game_over.wav'
 };
 const totalSoundsToLoad = Object.keys(soundFiles).length;
+let allSoundsPreDecoded = false; // New global flag
+
+// Quiz Statistics
+let questionsAnsweredCorrectly = 0;
+let questionsAnsweredTotal = 0;
 
 // Quiz State Variables
 let quizActive = false;
@@ -67,6 +74,42 @@ function shuffleArray(array) {
         [array[i], array[j]] = [array[j], array[i]]; // Swap elements
     }
 }
+
+async function tryDecodeAllSounds() {
+    console.log('Attempting to pre-decode all remaining sounds...');
+    const decodePromises = [];
+
+    for (const soundName in gameSounds) {
+        const soundData = gameSounds[soundName];
+        if (soundData instanceof ArrayBuffer) {
+            console.log(`Pre-decoding: ${soundName}`);
+            const decodePromise = audioCtx.decodeAudioData(soundData.slice(0)) // Use slice(0) for safety
+                .then(decodedBuffer => {
+                    gameSounds[soundName] = decodedBuffer;
+                    console.log(`Successfully pre-decoded: ${soundName}`);
+                })
+                .catch(error => {
+                    console.error(`Error pre-decoding ${soundName}: `, error);
+                });
+            decodePromises.push(decodePromise);
+        }
+    }
+
+    // Wait for all initiated decodes to settle (optional, but good for knowing when it's "done")
+    // If we don't wait, allSoundsPreDecoded = true might be set prematurely for this log.
+    // However, the primary goal is to kick them off.
+    try {
+        await Promise.all(decodePromises);
+        console.log('All pre-decoding attempts finished.');
+    } catch (error) {
+        // This catch is mostly for Promise.all setup errors, individual errors are caught above.
+        console.error('An error occurred during the Promise.all of pre-decoding sounds:', error);
+    }
+    
+    allSoundsPreDecoded = true; // Set flag after all attempts are made
+    console.log('Pre-decoding process initiated/completed for all applicable sounds. Flag allSoundsPreDecoded set to true.');
+}
+
 
 function updateScoreDisplay() {
     scoreDisplay.textContent = `Score: ${score}`;
@@ -166,20 +209,26 @@ function playSound(soundName) {
         }
     };
 
+    const attemptPlayActions = () => {
+        // This is the new part to run once audio is confirmed running
+        if (audioCtx.state === 'running' && !allSoundsPreDecoded) {
+            console.log('AudioContext is running. Initiating pre-decode for remaining sounds.');
+            tryDecodeAllSounds(); // This will set allSoundsPreDecoded = true internally
+        }
+        // Now, proceed with the playLogic for the current sound
+        playLogic(); 
+    };
+
     if (audioCtx.state === 'suspended') {
         console.log('AudioContext is suspended. Attempting to resume...');
         audioCtx.resume().then(() => {
-            console.log('AudioContext resumed successfully. New state:', audioCtx.state);
-            if (audioCtx.state === 'running') {
-                playLogic();
-            } else {
-                console.warn(`AudioContext did not reach 'running' state after resume. State: ${audioCtx.state}. Sound ${soundName} not played.`);
-            }
+            console.log('AudioContext resumed. New state:', audioCtx.state);
+            attemptPlayActions(); // Call after resume attempt
         }).catch(e => {
             console.error('Error resuming AudioContext in playSound:', e);
         });
     } else if (audioCtx.state === 'running') {
-        playLogic();
+        attemptPlayActions(); // Call if already running
     } else {
         console.warn(`AudioContext in unexpected state: ${audioCtx.state}. Sound ${soundName} not played.`);
     }
@@ -296,28 +345,70 @@ class Ball {
         for (let i = 0; i < bricks.length; i++) {
             const brick = bricks[i];
             if (brick.visible) {
-                // Simple AABB collision for ball (center) vs brick
-                // More accurate would be ball edges vs brick edges
-                if (this.x > brick.x && this.x < brick.x + brick.width &&
-                    this.y > brick.y && this.y < brick.y + brick.height) {
-                    
-                    console.log(`Brick hit at (${brick.x}, ${brick.y}). Is question brick: ${brick.isQuestionBrick}`);
+                const circleX = this.x;
+                const circleY = this.y;
+                const radius = this.radius;
+
+                const rectX = brick.x;
+                const rectY = brick.y;
+                const rectWidth = brick.width;
+                const rectHeight = brick.height;
+
+                // Find the closest point on the rectangle to the circle's center
+                const closestX = Math.max(rectX, Math.min(circleX, rectX + rectWidth));
+                const closestY = Math.max(rectY, Math.min(circleY, rectY + rectHeight));
+
+                // Calculate distance between circle's center and this closest point
+                const distanceX = circleX - closestX;
+                const distanceY = circleY - closestY;
+                const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+
+                // If the distance is less than the circle's radius squared, a collision occurred
+                if (distanceSquared < (radius * radius)) {
+                    console.log(`Collision with brick at (${rectX}, ${rectY}). Ball at (${circleX.toFixed(2)}, ${circleY.toFixed(2)})`);
+                    console.log(`Closest point: (${closestX.toFixed(2)}, ${closestY.toFixed(2)}), Distances: (dX:${distanceX.toFixed(2)}, dY:${distanceY.toFixed(2)})`);
+
                     brick.visible = false;
-                    this.dy *= -1; // Simple bounce, reverse vertical direction
-                    score += 10;   // Increment score
+                    score += 10;
                     updateScoreDisplay();
                     playSound('brick_hit');
-                    
-                    brickHitCount++; // Increment global hit count (for game progression if needed)
+                    brickHitCount++;
+
+                    // Refined Bounce Logic
+                    const overlapX = radius - Math.abs(distanceX);
+                    const overlapY = radius - Math.abs(distanceY);
+                    console.log(`Overlaps: (oX:${overlapX.toFixed(2)}, oY:${overlapY.toFixed(2)})`);
+
+                    // Determine primary collision edge based on penetration depth
+                    // Add a small tolerance to prefer vertical bounce for typical Breakout feel
+                    const tolerance = 0.1; 
+                    if (overlapX + tolerance < overlapY) { // Collision is more horizontal (hit side of brick)
+                        console.log("Horizontal collision detected, reversing dx.");
+                        this.dx *= -1;
+                        // Nudge ball out
+                        this.x += this.dx > 0 ? overlapX : -overlapX; 
+                    } else if (overlapY + tolerance < overlapX) { // Collision is more vertical (hit top/bottom of brick)
+                        console.log("Vertical collision detected, reversing dy.");
+                        this.dy *= -1;
+                        // Nudge ball out
+                        this.y += this.dy > 0 ? overlapY : -overlapY;
+                    } else { // Corner hit or very similar overlaps
+                        console.log("Corner collision detected, reversing both dx and dy.");
+                        this.dx *= -1;
+                        this.dy *= -1;
+                        // Nudge ball out (can be tricky for corners, simpler nudge for now)
+                        this.x += this.dx > 0 ? overlapX : -overlapX; 
+                        this.y += this.dy > 0 ? overlapY : -overlapY;
+                    }
+
 
                     if (brick.isQuestionBrick) {
                         console.log('Question brick hit! Triggering quiz...');
-                        brick.isQuestionBrick = false; // Avoid re-triggering
+                        brick.isQuestionBrick = false;
                         quizActive = true;
                         startQuiz();
                     }
-                    // Important: Exit loop after one brick collision per frame
-                    break; 
+                    break; // Exit loop after one hit
                 }
             }
         }
@@ -342,11 +433,27 @@ class Brick {
             ctx.fillRect(this.x, this.y, this.width, this.height);
 
             if (this.isQuestionBrick) {
+                const qText = "?";
+                const x = this.x + this.width / 2;
+                const y = this.y + this.height / 2;
                 ctx.font = "bold 16px Consolas";
-                ctx.fillStyle = "black"; // Color of the question mark
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                ctx.fillText("?", this.x + this.width / 2, this.y + this.height / 2);
+
+                // Shadow/Outline
+                ctx.fillStyle = "rgba(220, 220, 220, 0.7)"; // A slightly more opaque light gray (adjust color/opacity as needed)
+                const offset = 1; // Shadow offset
+                ctx.fillText(qText, x - offset, y - offset);
+                ctx.fillText(qText, x + offset, y - offset);
+                ctx.fillText(qText, x - offset, y + offset);
+                ctx.fillText(qText, x + offset, y + offset);
+                // Optional: a central, slightly more blurred shadow behind everything
+                // ctx.fillStyle = "rgba(50, 50, 50, 0.3)"; 
+                // ctx.fillText(qText, x, y, some_blur_if_supported_directly_or_canvas_shadow_prop);
+
+                // Main text
+                ctx.fillStyle = "black"; // Original text color
+                ctx.fillText(qText, x, y);
                 // console.log(`Drawing '?' on question brick at (${this.x}, ${this.y})`); // Potentially noisy
             }
         }
@@ -484,6 +591,7 @@ function startQuiz() {
     currentQuestion.answers.forEach((answer, index) => {
         const button = document.createElement('button');
         button.textContent = answer;
+        button.classList.add('quiz-answer-btn');
         button.onclick = () => handleAnswer(index);
         quizAnswersEl.appendChild(button);
     });
@@ -494,44 +602,37 @@ function startQuiz() {
 }
 
 function handleAnswer(selectedIndex) {
-    if (!currentQuestion) {
-        console.error("handleAnswer called but no currentQuestion.");
-        return;
-    }
+    if (!currentQuestion) return;
     console.log(`handleAnswer() called with index: ${selectedIndex}. Correct index: ${currentQuestion.correct_answer_index}`);
+    const answerButtons = document.querySelectorAll('#quizAnswers .quiz-answer-btn');
 
-    const buttons = quizAnswersEl.getElementsByTagName('button');
-    for (let btn of buttons) {
-        btn.disabled = true; // Disable all buttons
-    }
+    answerButtons.forEach(btn => {
+        btn.classList.remove('selected-correct', 'selected-incorrect', 'actual-correct');
+        btn.disabled = true;
+    });
 
     const correct = selectedIndex === currentQuestion.correct_answer_index;
-    if (correct) {
-        score += 50;
-        quizFeedback.textContent = "Correct!";
-        quizFeedback.style.color = "green";
-    } else {
-        score -= 20;
-        score = Math.max(0, score); // Prevent score from going below zero
-        quizFeedback.textContent = `Incorrect. Correct was: ${currentQuestion.answers[currentQuestion.correct_answer_index]}`;
-        quizFeedback.style.color = "red";
+    const clickedButton = answerButtons[selectedIndex];
 
-        if (!ballSpeedBoostActive) {
-            ballSpeedBoostActive = true;
-            originalBallSpeedX = ball.dx;
-            originalBallSpeedY = ball.dy;
-            ball.dx *= 1.5;
-            ball.dy *= 1.5;
-            // Cap speeds
-            ball.dx = Math.max(-9, Math.min(9, ball.dx));
-            ball.dy = Math.max(-9, Math.min(9, ball.dy));
-            boostStartTime = Date.now();
-            console.log("Speed boost activated.");
-        }
+    if (correct) {
+        score += SCORE_FOR_CORRECT_QUIZ_ANSWER;
+        quizFeedback.textContent = `Correct! +${SCORE_FOR_CORRECT_QUIZ_ANSWER} points`;
+        quizFeedback.style.color = 'green';
+        if (clickedButton) clickedButton.classList.add('selected-correct');
+    } else {
+        score += SCORE_FOR_INCORRECT_QUIZ_ANSWER;
+        score = Math.max(0, score);
+        const correctAnswerText = currentQuestion.answers[currentQuestion.correct_answer_index];
+        quizFeedback.textContent = `Incorrect. ${SCORE_FOR_INCORRECT_QUIZ_ANSWER} points. Correct answer was: ${correctAnswerText}`;
+        quizFeedback.style.color = 'red';
+        if (clickedButton) clickedButton.classList.add('selected-incorrect');
+
+        const correctButton = answerButtons[currentQuestion.correct_answer_index];
+        if (correctButton) correctButton.classList.add('actual-correct');
     }
+
     updateScoreDisplay();
-    console.log(`Score: ${score}, Feedback: ${quizFeedback.textContent}`);
-    setTimeout(endQuiz, 2000); // Display feedback for 2 seconds
+    /* Keep your existing setTimeout(endQuiz, 2000); call here */
 }
 
 function endQuiz() {
@@ -539,6 +640,7 @@ function endQuiz() {
     quizPopup.style.display = 'none';
     quizActive = false;
     currentQuestion = null;
+    checkWinCondition(); // Check if winning after quiz on last brick
 }
 
 // Reset Game
@@ -571,6 +673,10 @@ function resetGame() {
     // questionBrickTarget will be reset by initializeBricks
     brickHitCount = 0; // Reset global hit count
 
+    // Reset Quiz Statistics
+    questionsAnsweredCorrectly = 0;
+    questionsAnsweredTotal = 0;
+
     // Populate and shuffle quiz queue
     shuffledQuizQueue = [];
     if (quizQuestions.length > 0) {
@@ -586,19 +692,47 @@ function resetGame() {
 
 // Check Win Condition
 function checkWinCondition() {
-    // Ensure bricks array is initialized and not empty before checking
     if (!bricks || bricks.length === 0) {
         return; 
     }
-
     const allBricksInvisible = bricks.every(brick => !brick.visible);
-    if (allBricksInvisible) {
-        // Ensure sound plays before alert might pause execution
-        playSound('game_over'); // Or a 'win_game.wav' if you had one, for now use game_over
-        alert('YOU WIN! Press OK to restart.'); // Simple win message
-        resetGame();
+    
+    // Win condition: All bricks gone AND quiz is not currently active
+    if (allBricksInvisible && !quizActive) {
+        console.log("Win condition met. Showing game summary.");
+        showGameSummary();
     }
 }
+
+// Show Game Summary Function
+function showGameSummary() {
+    console.log("Showing game summary. Score:", score, "Correct:", questionsAnsweredCorrectly, "Total:", questionsAnsweredTotal);
+    const summaryPopup = document.getElementById('gameSummaryPopup');
+    const summaryTitle = document.getElementById('summaryTitle');
+    const summaryScoreDisplay = document.getElementById('summaryScore');
+    const summaryQuizStatsDisplay = document.getElementById('summaryQuizStats');
+
+    if (!summaryPopup || !summaryTitle || !summaryScoreDisplay || !summaryQuizStatsDisplay) {
+        console.error("Game summary DOM elements not found! Falling back to alert.");
+        // Fallback to alert and reset if DOM elements are missing
+        alert(`YOU WIN!
+Final Score: ${score}
+Questions: ${questionsAnsweredCorrectly} correct / ${questionsAnsweredTotal} total`);
+        resetGame();
+        return;
+    }
+
+    summaryTitle.textContent = "YOU WIN!";
+    summaryScoreDisplay.textContent = `Final Score: ${score}`;
+    summaryQuizStatsDisplay.textContent = `Questions: ${questionsAnsweredCorrectly} correct / ${questionsAnsweredTotal} total`;
+    
+    summaryPopup.style.display = 'block';
+    // Game loop is effectively paused because checkWinCondition is called from update,
+    // and if win is true, subsequent updates will be short-circuited by quizActive or other means.
+    // Or, if we want to be absolutely sure, we could set a new global flag like `gameWon = true`
+    // and check that at the start of update(). For now, this should suffice as there are no bricks.
+}
+
 
 // Game Objects
 const paddle = new Paddle();
@@ -619,6 +753,20 @@ async function initializeGame() {
 
     // The one-time click listener for resuming AudioContext has been removed.
     // AudioContext resume will now be attempted within playSound if needed.
+
+    // "Play Again" Button Listener
+    const playAgainButton = document.getElementById('playAgainButton');
+    if (playAgainButton) {
+        playAgainButton.addEventListener('click', () => {
+            console.log("'Play Again' clicked.");
+            const summaryPopup = document.getElementById('gameSummaryPopup');
+            if (summaryPopup) summaryPopup.style.display = 'none';
+            resetGame();
+        });
+        console.log("Play Again button listener set up.");
+    } else {
+        console.warn("#playAgainButton not found during listener setup.");
+    }
 
     // Start the game loop
     gameLoop();

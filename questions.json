@@ -560,16 +560,6 @@
         "correct_answer_index": 1
     },
     {
-        "title": "Abrechnungsregel Wegzeit",
-        "question": "Wie wird die Wegzeit (AA.00.0050, Wegzeit, pro 1 Min.) bei mehreren Patienten in einer Besuchstour abgerechnet?",
-        "answers": [
-            "Die gesamte Tour kann abgerechnet werden",
-            "Nur die Zeit zwischen zwei Patienten darf abgerechnet werden",
-            "Wegzeit ist hier nicht abrechenbar"
-        ],
-        "correct_answer_index": 1
-    },
-    {
         "title": "Mengenbeschränkung AA",
         "question": "Wie oft darf „Besuch, erste 5 Min.“ (AA.00.0030, Besuch, erste 5 Min.) pro Sitzung verrechnet werden?",
         "answers": [
@@ -610,16 +600,6 @@
         "correct_answer_index": 1
     },
     {
-        "title": "Abrechnungsregel Wegzeit",
-        "question": "Wie wird die Wegzeit (AA.00.0050, Wegzeit, pro 1 Min.) bei mehreren Patienten in einer Besuchstour abgerechnet?",
-        "answers": [
-            "Die gesamte Tour kann abgerechnet werden",
-            "Nur die Zeit zwischen zwei Patienten darf abgerechnet werden",
-            "Wegzeit ist hier nicht abrechenbar"
-        ],
-        "correct_answer_index": 1
-    },
-    {
         "title": "Kumulation AA",
         "question": "Können AA.00.0010 (Ärztliche Konsultation, erste 5 Min.) und AA.10.0010 (Telemedizinische Konsultation, erste 5 Min.) gemeinsam abgerechnet werden?",
         "answers": [
@@ -628,16 +608,6 @@
             "Nur bei besonderen Notfällen"
         ],
         "correct_answer_index": 1
-    },
-    {
-        "title": "Mengenbeschränkung AA",
-        "question": "Wie oft darf die Leistung „Ärztliche Konsultation, erste 5 Min.“ (AA.00.0010, Ärztliche Konsultation, erste 5 Min.) pro Sitzung abgerechnet werden?",
-        "answers": [
-            "Nur einmal pro Sitzung",
-            "Maximal dreimal pro Sitzung",
-            "Beliebig oft pro Sitzung"
-        ],
-        "correct_answer_index": 0
     },
     {
         "title": "Mengenbeschränkung AA",
@@ -686,16 +656,6 @@
             "Als eigenständige Leistung",
             "Nur als Zuschlag zu AA.00.0010 (Ärztliche Konsultation, erste 5 Min.)",
             "Bei jedem Folgetermin"
-        ],
-        "correct_answer_index": 1
-    },
-    {
-        "title": "Abrechnungsregel Wegzeit",
-        "question": "Wie wird die Wegzeit (AA.00.0050, Wegzeit, pro 1 Min.) bei mehreren Patienten in einer Besuchstour abgerechnet?",
-        "answers": [
-            "Die gesamte Tour kann abgerechnet werden",
-            "Nur die Zeit zwischen zwei Patienten darf abgerechnet werden",
-            "Wegzeit ist hier nicht abrechenbar"
         ],
         "correct_answer_index": 1
     },
@@ -788,5 +748,205 @@
             "Nur bei Hausärzten"
         ],
         "correct_answer_index": 1
+    },
+    {
+        "title": "Definition Einzelleistung",
+        "question": "Was ist eine Einzelleistung im TARDOC?",
+        "answers": [
+            "Eine einzelne, genau definierte abrechenbare medizinische Handlung",
+            "Ein Bündel von Einzelleistungen",
+            "Eine spezielle Form der Pauschale"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Kumulationsverbot",
+        "question": "Was bedeutet ein Kumulationsverbot bei zwei TARDOC-Leistungen?",
+        "answers": [
+            "Sie dürfen nicht in derselben Sitzung abgerechnet werden",
+            "Sie müssen gemeinsam abgerechnet werden",
+            "Sie gelten nur im Spital"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Dignität",
+        "question": "Wo findet man die für eine Leistung vorgeschriebene Dignität im Katalog?",
+        "answers": [
+            "Direkt in der Leistungstabelle, bei jeder Tarifposition",
+            "Nur im Anhang",
+            "Auf der Rechnung"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Trigger",
+        "question": "Was ist ein typischer \"Trigger\" für eine ambulante Pauschale?",
+        "answers": [
+            "Das gleichzeitige Vorliegen mehrerer vordefinierter Einzelleistungen",
+            "Die Unterschrift des Arztes",
+            "Die Abgabe eines Medikaments"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Definition Pauschale",
+        "question": "Was ist eine Pauschale laut TARDOC?",
+        "answers": [
+            "Eine abgerechnete Kombination medizinisch sinnvoll zusammengefasster Leistungen",
+            "Eine frei wählbare Abrechnungseinheit",
+            "Eine doppelt so hohe Einzelleistung"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Mengenbegrenzung",
+        "question": "Wie oft darf eine telemedizinische Konsultation (AA.10.0010, Telemedizinische Konsultation, erste 5 Min.) pro Sitzung abgerechnet werden?",
+        "answers": [
+            "Maximal einmal pro Sitzung",
+            "Maximal zweimal",
+            "Beliebig oft"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Telemedizin",
+        "question": "Was unterscheidet die telemedizinische Konsultation (AA.10.0010) von der Präsenz-Konsultation?",
+        "answers": [
+            "Sie darf nicht zusammen mit AA.00.0010 (Konsultation, erste 5 Min.) abgerechnet werden",
+            "Sie ist immer günstiger",
+            "Sie braucht keine Dokumentation"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Kumulation",
+        "question": "Können AA.00.0030 (Besuch, erste 5 Min.) und AA.00.0010 (Konsultation, erste 5 Min.) in derselben Sitzung abgerechnet werden?",
+        "answers": [
+            "Nein, ein Kumulationsverbot besteht",
+            "Ja, wenn sie am gleichen Tag stattfinden",
+            "Nur bei unterschiedlichen Diagnosen"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Wegzeit",
+        "question": "Wann darf Wegzeit (AA.00.0050, Wegzeit, pro 1 Min.) abgerechnet werden?",
+        "answers": [
+            "Nur bei ärztlichen Hausbesuchen außerhalb der Praxis",
+            "Bei jedem Praxisbesuch",
+            "Nie"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Pauschaleninhalt",
+        "question": "Was ist in den meisten ambulanten Pauschalen (z.B. C00.10A) zusätzlich zu den Hauptleistungen enthalten?",
+        "answers": [
+            "Gewisse diagnostische Einzelleistungen und bestimmte Grundpflege",
+            "Alle Medikamente",
+            "Nur ärztliche Zeit"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Pauschalenprüfung",
+        "question": "Wie erkennt das System, ob eine Pauschale ausgelöst wird?",
+        "answers": [
+            "Durch die technische Prüflogik im Katalog (Triggerregeln und Mindestleistungen)",
+            "Durch Handaufschreiben",
+            "Per Zufall"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Hausarzt-Notfall",
+        "question": "Welche Voraussetzung braucht es für CA.15.0030 (Notfallkonsultation am Telefon, erste 5 Min.)?",
+        "answers": [
+            "Akute, nicht planbare gesundheitliche Situation",
+            "Jedes Symptom",
+            "Vorherige Konsultation"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Hausbesuch",
+        "question": "Was gilt als Hausbesuch im Kapitel CA?",
+        "answers": [
+            "Persönliche ärztliche Behandlung außerhalb der Praxis",
+            "Telefonischer Kontakt",
+            "Behandlung im Spital"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Zuschläge",
+        "question": "Wann darf der Zuschlag AA.00.0040 (+ Besuch, jede weitere 1 Min.) abgerechnet werden?",
+        "answers": [
+            "Nur als Ergänzung zu AA.00.0030 (Besuch, erste 5 Min.)",
+            "Immer, unabhängig von anderen Leistungen",
+            "Bei jedem Patienten"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Einzelleistung in Pauschale",
+        "question": "Was passiert mit Einzelleistungen, die im Gültigkeitsbereich einer Pauschale erbracht werden?",
+        "answers": [
+            "Sie sind in der Pauschale abgegolten und nicht separat abrechnungsfähig",
+            "Sie müssen immer separat abgerechnet werden",
+            "Sie gelten doppelt"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Kombinierbarkeit Pauschale",
+        "question": "Können zwei ambulante Pauschalen für die gleiche Sitzung abgerechnet werden?",
+        "answers": [
+            "Nur, wenn beide unterschiedliche Leistungsbereiche abdecken und kein Kumulationsverbot besteht",
+            "Immer",
+            "Nie"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Dokumentation",
+        "question": "Was ist bei der Abrechnung jeder Pauschale zwingend erforderlich?",
+        "answers": [
+            "Die lückenlose Dokumentation der erbrachten Einzelleistungen und Begründungen",
+            "Nur der Name des Patienten",
+            "Die Höhe der Vergütung"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Auslösung Pauschale",
+        "question": "Wer löst die Pauschale technisch aus?",
+        "answers": [
+            "Das Abrechnungssystem/Grouper anhand der hinterlegten Trigger",
+            "Der Patient selbst",
+            "Der Chefarzt"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Kombinierbarkeit AA/CA",
+        "question": "Dürfen Leistungen aus Kapitel AA und CA kombiniert abgerechnet werden?",
+        "answers": [
+            "Nur, wenn kein Kumulationsverbot besteht",
+            "Immer",
+            "Nie"
+        ],
+        "correct_answer_index": 0
+    },
+    {
+        "title": "Leistungsbeschreibung",
+        "question": "Wo findet man die Beschreibung einer Pauschale wie C00.20A?",
+        "answers": [
+            "Im Leistungskatalog (z.B. TARDOC/AMBULANT), direkt neben dem Pauschalencode",
+            "Nur auf der Rechnung",
+            "Nur beim Versicherer"
+        ],
+        "correct_answer_index": 0
     }
 ]
