@@ -22,7 +22,10 @@ def get_new_quiz_question():
     Returns None if no questions are available or all have been used.
     '''
     global questions_data_cache, used_question_indices
-    load_questions_if_needed()
+    # Make sure questions_data_cache is loaded before trying to use it for available_indices calculation for the print statement
+    load_questions_if_needed() 
+    available_indices_for_print = [i for i, q in enumerate(questions_data_cache) if i not in used_question_indices]
+    print(f"INFO: Requesting new question. Used indices count: {len(used_question_indices)}. Available before selection: {len(available_indices_for_print)}")
 
     if not questions_data_cache:
         return None
@@ -30,15 +33,21 @@ def get_new_quiz_question():
     available_indices = [i for i, q in enumerate(questions_data_cache) if i not in used_question_indices]
 
     if not available_indices:
-        print("Warning: All quiz questions have been used. Resetting if you want to continue playing with repeated questions.")
-        # Optional: Reset used_question_indices here if you want questions to repeat
-        # used_question_indices.clear()
-        # available_indices = list(range(len(questions_data_cache)))
-        # if not available_indices: return None # Still no questions
-        return None # For now, don't repeat; game can decide how to handle this
+        # print("Warning: All quiz questions have been used. Resetting used questions list to allow repeats.") # Original print
+        # This print should be right before used_question_indices.clear()
+        print(f"INFO: All questions used. Resetting used_question_indices. Current used count: {len(used_question_indices)}. Total questions: {len(questions_data_cache)}")
+        used_question_indices.clear() # Reset the set of used indices
+        # Recalculate available_indices after clearing
+        available_indices = [i for i, q in enumerate(questions_data_cache) if i not in used_question_indices] # Should now be all questions
+        
+        if not available_indices: # This would only happen if questions_data_cache itself is empty
+            print("Error: No questions available in cache even after reset. Cannot select a question.")
+            return None 
 
     selected_idx = random.choice(available_indices)
     used_question_indices.add(selected_idx)
+    selected_question_title = questions_data_cache[selected_idx].get('title', 'N/A') # Get title for print
+    print(f"INFO: Selected question index: {selected_idx}. Title: '{selected_question_title}'. Used indices count now: {len(used_question_indices)}")
     return questions_data_cache[selected_idx]
 
 def check_answer_and_update_score(current_score, question_data, selected_answer_index):
