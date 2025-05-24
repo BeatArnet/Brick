@@ -186,6 +186,7 @@ start_game()
 running = True
 clock = pygame.time.Clock()
 game_font = pygame.font.SysFont('Consolas', 30) # Besser lesbare Schriftart
+question_mark_font = pygame.font.SysFont('Consolas', 20) # Font for question mark
 
 while running:
     
@@ -378,7 +379,13 @@ while running:
     for brick_item in bricks:
         if brick_item['visible']:
             pygame.draw.rect(screen, brick_item['color'], brick_item['rect'])
-            pygame.draw.rect(screen, WHITE, brick_item['rect'], 1) 
+            pygame.draw.rect(screen, WHITE, brick_item['rect'], 1) # Border for all visible bricks
+
+            if brick_item.get('is_question_brick'):
+                question_text_surface = question_mark_font.render("?", True, BLACK)
+                text_rect = question_text_surface.get_rect()
+                text_rect.center = brick_item['rect'].center
+                screen.blit(question_text_surface, text_rect.topleft)
 
     # Paddle zeichnen
     # Ensure paddle_rect is defined for drawing even if quiz is active (uses last position)
