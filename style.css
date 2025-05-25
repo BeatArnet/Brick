@@ -88,6 +88,14 @@ body {
     background-color: #e0e0e0;
 }
 
+/* Style for keyboard-selected quiz answer */
+#quizAnswers button.selected-answer-keyboard {
+    background-color: #cce5ff; /* Light blue background */
+    border: 2px solid #0056b3; /* Strong blue border */
+    /* Ensure padding is maintained or adjusted if border affects size */
+    padding: 9px; /* Adjust padding to account for the thicker border (10px - 1px) */
+}
+
 #quizFeedback {
     margin-top: 15px;
     font-weight: bold;
@@ -141,4 +149,11 @@ body {
 
 #gameEndPlayAgainButton:hover {
     background-color: #45a049; /* Darker green on hover */
+}
+
+/* Style for active game end button (keyboard focus) */
+#gameEndPlayAgainButton.game-end-button-active {
+    outline: 3px solid #0056b3; /* Strong blue outline */
+    outline-offset: 2px; /* Optional: adds a little space between border and outline */
+    background-color: #5cb85c; /* Slightly brighter green to indicate active state */
 }
