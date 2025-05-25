@@ -24,8 +24,6 @@ const PADDLE_COLORS = ["#0095DD", "#DD0095", "#95DD00", "#DD9500"]; // Some padd
 // Score
 let score = 0;
 const scoreDisplay = document.getElementById('scoreDisplay');
-const SCORE_FOR_CORRECT_QUIZ_ANSWER = 50;
-const SCORE_FOR_INCORRECT_QUIZ_ANSWER = -20;
 
 // AudioContext and Sound Buffers
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -591,7 +589,6 @@ function startQuiz() {
     currentQuestion.answers.forEach((answer, index) => {
         const button = document.createElement('button');
         button.textContent = answer;
-        button.classList.add('quiz-answer-btn');
         button.onclick = () => handleAnswer(index);
         quizAnswersEl.appendChild(button);
     });
@@ -602,37 +599,46 @@ function startQuiz() {
 }
 
 function handleAnswer(selectedIndex) {
-    if (!currentQuestion) return;
+    if (!currentQuestion) {
+        console.error("handleAnswer called but no currentQuestion.");
+        return;
+    }
     console.log(`handleAnswer() called with index: ${selectedIndex}. Correct index: ${currentQuestion.correct_answer_index}`);
-    const answerButtons = document.querySelectorAll('#quizAnswers .quiz-answer-btn');
 
-    answerButtons.forEach(btn => {
-        btn.classList.remove('selected-correct', 'selected-incorrect', 'actual-correct');
-        btn.disabled = true;
-    });
-
-    const correct = selectedIndex === currentQuestion.correct_answer_index;
-    const clickedButton = answerButtons[selectedIndex];
-
-    if (correct) {
-        score += SCORE_FOR_CORRECT_QUIZ_ANSWER;
-        quizFeedback.textContent = `Correct! +${SCORE_FOR_CORRECT_QUIZ_ANSWER} points`;
-        quizFeedback.style.color = 'green';
-        if (clickedButton) clickedButton.classList.add('selected-correct');
-    } else {
-        score += SCORE_FOR_INCORRECT_QUIZ_ANSWER;
-        score = Math.max(0, score);
-        const correctAnswerText = currentQuestion.answers[currentQuestion.correct_answer_index];
-        quizFeedback.textContent = `Incorrect. ${SCORE_FOR_INCORRECT_QUIZ_ANSWER} points. Correct answer was: ${correctAnswerText}`;
-        quizFeedback.style.color = 'red';
-        if (clickedButton) clickedButton.classList.add('selected-incorrect');
-
-        const correctButton = answerButtons[currentQuestion.correct_answer_index];
-        if (correctButton) correctButton.classList.add('actual-correct');
+    const buttons = quizAnswersEl.getElementsByTagName('button');
+    for (let btn of buttons) {
+        btn.disabled = true; // Disable all buttons
     }
 
+    questionsAnsweredTotal++;
+    const correct = selectedIndex === currentQuestion.correct_answer_index;
+    if (correct) {
+        questionsAnsweredCorrectly++;
+        score += 50;
+        quizFeedback.textContent = "Correct!";
+        quizFeedback.style.color = "green";
+    } else {
+        score -= 20;
+        score = Math.max(0, score); // Prevent score from going below zero
+        quizFeedback.textContent = `Incorrect. Correct was: ${currentQuestion.answers[currentQuestion.correct_answer_index]}`;
+        quizFeedback.style.color = "red";
+
+        if (!ballSpeedBoostActive) {
+            ballSpeedBoostActive = true;
+            originalBallSpeedX = ball.dx;
+            originalBallSpeedY = ball.dy;
+            ball.dx *= 1.5;
+            ball.dy *= 1.5;
+            // Cap speeds
+            ball.dx = Math.max(-9, Math.min(9, ball.dx));
+            ball.dy = Math.max(-9, Math.min(9, ball.dy));
+            boostStartTime = Date.now();
+            console.log("Speed boost activated.");
+        }
+    }
     updateScoreDisplay();
-    /* Keep your existing setTimeout(endQuiz, 2000); call here */
+    console.log(`Score: ${score}, Feedback: ${quizFeedback.textContent}`);
+    setTimeout(endQuiz, 2000); // Display feedback for 2 seconds
 }
 
 function endQuiz() {
@@ -722,9 +728,9 @@ Questions: ${questionsAnsweredCorrectly} correct / ${questionsAnsweredTotal} tot
         return;
     }
 
-    summaryTitle.textContent = "Sie haben gewonnen";
-    summaryScoreDisplay.textContent = `Score: ${score}`;
-    summaryQuizStatsDisplay.textContent = `Fragen: ${questionsAnsweredCorrectly} korrekt / ${questionsAnsweredTotal} total`;
+    summaryTitle.textContent = "YOU WIN!";
+    summaryScoreDisplay.textContent = `Final Score: ${score}`;
+    summaryQuizStatsDisplay.textContent = `Questions: ${questionsAnsweredCorrectly} correct / ${questionsAnsweredTotal} total`;
     
     summaryPopup.style.display = 'block';
     // Game loop is effectively paused because checkWinCondition is called from update,
