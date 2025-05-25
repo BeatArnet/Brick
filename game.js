@@ -61,6 +61,10 @@ let shuffledQuizQueue = []; // New global for shuffled questions
 // DOM Elements for Quiz
 const quizPopup = document.getElementById('quizPopup');
 const quizTitle = document.getElementById('quizTitle');
+
+// Keyboard control flags
+let arrowLeftPressed = false;
+let arrowRightPressed = false;
 const quizQuestionEl = document.getElementById('quizQuestion'); // Renamed to avoid conflict with global
 const quizAnswersEl = document.getElementById('quizAnswers');   // Renamed to avoid conflict with global
 const quizFeedback = document.getElementById('quizFeedback');
@@ -110,7 +114,7 @@ async function tryDecodeAllSounds() {
 
 
 function updateScoreDisplay() {
-    scoreDisplay.textContent = `Score: ${score}`;
+    scoreDisplay.textContent = `Punktestand: ${score}`;
 }
 
 // 2. Asset Loading
@@ -507,8 +511,21 @@ function drawGame() {
 }
 
 // Input Handling
-// Keyboard event listeners for paddle movement (ArrowLeft, ArrowRight) are removed.
-// Variables rightPressed and leftPressed are no longer needed.
+document.addEventListener('keydown', (event) => {
+    if (event.key === "ArrowLeft") {
+        arrowLeftPressed = true;
+    } else if (event.key === "ArrowRight") {
+        arrowRightPressed = true;
+    }
+});
+
+document.addEventListener('keyup', (event) => {
+    if (event.key === "ArrowLeft") {
+        arrowLeftPressed = false;
+    } else if (event.key === "ArrowRight") {
+        arrowRightPressed = false;
+    }
+});
 
 canvas.addEventListener('mousemove', (event) => {
     const rect = canvas.getBoundingClientRect();
@@ -543,6 +560,23 @@ function update() {
 
     // Paddle movement based on leftPressed and rightPressed flags is removed.
     // Paddle position will be updated directly by the mousemove event handler.
+
+    // Paddle movement based on arrow keys
+    if (arrowLeftPressed) {
+        paddle.x -= PADDLE_SPEED;
+    }
+    if (arrowRightPressed) {
+        paddle.x += PADDLE_SPEED;
+    }
+
+    // Boundary checks for paddle (after keyboard or mouse update)
+    if (paddle.x < 0) {
+        paddle.x = 0;
+    }
+    if (paddle.x + paddle.width > canvas.width) {
+        paddle.x = canvas.width - paddle.width;
+    }
+
     ball.update(); // This now includes collision detection for ball-paddle and ball-brick
     checkWinCondition(); // Check if all bricks are cleared
 }
@@ -606,23 +640,32 @@ function handleAnswer(selectedIndex) {
     console.log(`handleAnswer() called with index: ${selectedIndex}. Correct index: ${currentQuestion.correct_answer_index}`);
 
     const buttons = quizAnswersEl.getElementsByTagName('button');
-    for (let btn of buttons) {
-        btn.disabled = true; // Disable all buttons
+    for (let i = 0; i < buttons.length; i++) {
+        buttons[i].disabled = true;
+        if (i === currentQuestion.correct_answer_index) {
+            buttons[i].style.backgroundColor = 'lightgreen';
+        } else if (i === selectedIndex) {
+            buttons[i].style.backgroundColor = 'salmon';
+        } else {
+            buttons[i].style.backgroundColor = 'lightgray'; // Or '' for default
+        }
     }
 
     questionsAnsweredTotal++;
     const correct = selectedIndex === currentQuestion.correct_answer_index;
     if (correct) {
         questionsAnsweredCorrectly++;
-        score += 50;
-        quizFeedback.textContent = "Correct!";
+        score += 100; // Updated score
+        quizFeedback.textContent = "+100 Punkte"; // Updated feedback text
         quizFeedback.style.color = "green";
     } else {
         score -= 20;
         score = Math.max(0, score); // Prevent score from going below zero
-        quizFeedback.textContent = `Incorrect. Correct was: ${currentQuestion.answers[currentQuestion.correct_answer_index]}`;
+        quizFeedback.textContent = "-20 Punkte"; // Updated feedback text
         quizFeedback.style.color = "red";
 
+        // The original problem description for this subtask did not mention
+        // removing the speed boost logic on incorrect answer, so I'll keep it.
         if (!ballSpeedBoostActive) {
             ballSpeedBoostActive = true;
             originalBallSpeedX = ball.dx;
@@ -721,16 +764,16 @@ function showGameSummary() {
     if (!summaryPopup || !summaryTitle || !summaryScoreDisplay || !summaryQuizStatsDisplay) {
         console.error("Game summary DOM elements not found! Falling back to alert.");
         // Fallback to alert and reset if DOM elements are missing
-        alert(`YOU WIN!
-Final Score: ${score}
-Questions: ${questionsAnsweredCorrectly} correct / ${questionsAnsweredTotal} total`);
+        alert(`DU HAST GEWONNEN!
+Endpunktestand: ${score}
+Fragen: ${questionsAnsweredCorrectly} richtig / ${questionsAnsweredTotal} insgesamt`);
         resetGame();
         return;
     }
 
-    summaryTitle.textContent = "YOU WIN!";
-    summaryScoreDisplay.textContent = `Final Score: ${score}`;
-    summaryQuizStatsDisplay.textContent = `Questions: ${questionsAnsweredCorrectly} correct / ${questionsAnsweredTotal} total`;
+    summaryTitle.textContent = "DU HAST GEWONNEN!";
+    summaryScoreDisplay.textContent = `Endpunktestand: ${score}`;
+    summaryQuizStatsDisplay.textContent = `Fragen: ${questionsAnsweredCorrectly} richtig / ${questionsAnsweredTotal} insgesamt`;
     
     summaryPopup.style.display = 'block';
     // Game loop is effectively paused because checkWinCondition is called from update,
