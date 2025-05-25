@@ -93,7 +93,7 @@ body {
     background-color: #cce5ff; /* Light blue background */
     border: 2px solid #0056b3; /* Strong blue border */
     /* Ensure padding is maintained or adjusted if border affects size */
-    padding: 9px; /* Adjust padding to account for the thicker border (10px - 1px) */
+    padding: 9px; /* Adjust padding to account for the thicker border (10px default - 1px for border diff) */
 }
 
 #quizFeedback {
@@ -154,6 +154,6 @@ body {
 /* Style for active game end button (keyboard focus) */
 #gameEndPlayAgainButton.game-end-button-active {
     outline: 3px solid #0056b3; /* Strong blue outline */
-    outline-offset: 2px; /* Optional: adds a little space between border and outline */
-    background-color: #5cb85c; /* Slightly brighter green to indicate active state */
+    outline-offset: 2px;      /* Example: offset for clarity */
+    background-color: #5cb85c; /* Example: slightly brighter green */
 }
