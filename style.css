@@ -93,35 +93,52 @@ body {
     font-weight: bold;
 }
 
-/* Game Summary Popup */
-#gameSummaryPopup {
-    display: none;
+/* Game End Popup */
+#quizPopup,
+#gameEndPopup {
+    display: none; /* Hidden by default */
     position: fixed;
-    left: 50%;
     top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 500px; /* Consistent with quizPopup */
     padding: 20px;
-    background-color: #f0f0f0; /* Light background */
-    border: 2px solid #333;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    text-align: center;
-    z-index: 1001; /* Ensure it's on top if quiz popup is 1000 */
+    background-color: white; /* Consistent with quizPopup */
+    border: 1px solid #ddd; /* Consistent with quizPopup */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Consistent with quizPopup */
+    z-index: 1000; /* Consistent with quizPopup */
 }
-#gameSummaryPopup h2 { 
-    margin-top: 0; 
+
+#gameEndPopup {
+    text-align: center; /* Center align text for the popup */
 }
-#gameSummaryPopup p {
+
+#gameEndTitle {
+    font-size: 22px; /* Slightly larger than quizTitle */
+    font-weight: bold;
+    margin-top: 0; /* Remove default h2 margin */
+    margin-bottom: 20px; /* Space before score details */
+}
+
+#gameEndScore,
+#gameEndCorrect,
+#gameEndIncorrect {
     margin: 10px 0;
+    font-size: 16px;
 }
-#gameSummaryPopup button {
-    padding: 10px 20px;
+
+#gameEndPlayAgainButton {
+    padding: 12px 25px;
     font-size: 16px;
     cursor: pointer;
-    background-color: #4CAF50; /* Green */
+    background-color: #4CAF50; /* Green, similar to previous summary button */
     color: white;
     border: none;
     border-radius: 5px;
+    margin-top: 20px; /* Space above the button */
 }
-#gameSummaryPopup button:hover {
-    background-color: #45a049;
+
+#gameEndPlayAgainButton:hover {
+    background-color: #45a049; /* Darker green on hover */
 }
