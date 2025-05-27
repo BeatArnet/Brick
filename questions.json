@@ -651,11 +651,11 @@
     },
     {
         "title": "Mengenbeschränkung AA.00.0010",
-        "question": "Wie oft darf die Leistung „Ärztliche Konsultation, erste 5 Min.\" (LKN AA.00.0010) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Ärztliche Konsultation, erste 5 Min.\" (LKN AA.00.0010) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Beliebig oft pro sitzung",
-            "Maximal 1 mal pro sitzung",
-            "Maximal 3 mal pro sitzung"
+            "Beliebig oft pro Sitzung",
+            "Maximal 1 mal pro Sitzung",
+            "Maximal 3 mal pro Sitzung"
         ],
         "correct_answer_index": 1
     },
@@ -671,21 +671,21 @@
     },
     {
         "title": "Mengenbeschränkung AA.00.0020",
-        "question": "Wie oft darf die Leistung „+ Ärztliche Konsultation, jede weitere 1 Min.\" (LKN AA.00.0020) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „+ Ärztliche Konsultation, jede weitere 1 Min.\" (LKN AA.00.0020) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 30 mal pro sitzung",
-            "Maximal 15 mal pro sitzung",
-            "Beliebig oft pro sitzung"
+            "Maximal 30 mal pro Sitzung",
+            "Maximal 15 mal pro Sitzung",
+            "Beliebig oft pro Sitzung"
         ],
         "correct_answer_index": 1
     },
     {
         "title": "Mengenbeschränkung AA.00.0030",
-        "question": "Wie oft darf die Leistung „Besuch, erste 5 Min.\" (LKN AA.00.0030) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Besuch, erste 5 Min.\" (LKN AA.00.0030) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 2 mal pro sitzung",
-            "Maximal 1 mal pro sitzung",
-            "Beliebig oft pro sitzung"
+            "Maximal 2 mal pro Sitzung",
+            "Maximal 1 mal pro Sitzung",
+            "Beliebig oft pro Sitzung"
         ],
         "correct_answer_index": 1
     },
@@ -701,61 +701,61 @@
     },
     {
         "title": "Mengenbeschränkung AA.00.0040",
-        "question": "Wie oft darf die Leistung „+ Besuch, jede weitere 1 Min.\" (LKN AA.00.0040) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „+ Besuch, jede weitere 1 Min.\" (LKN AA.00.0040) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 30 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 15 mal pro sitzung"
+            "Maximal 30 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 15 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
     {
         "title": "Mengenbeschränkung AA.00.0050",
-        "question": "Wie oft darf die Leistung „Wegzeit, pro 1 Min.\" (LKN AA.00.0050) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Wegzeit, pro 1 Min.\" (LKN AA.00.0050) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 60 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 120 mal pro sitzung"
+            "Maximal 60 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 120 mal pro Sitzung"
         ],
         "correct_answer_index": 0
     },
     {
         "title": "Mengenbeschränkung AA.00.0060",
-        "question": "Wie oft darf die Leistung „Vor-und Nachbesprechung diagnostischer/therapeutischer Eingriffe mit Patienten, pro 1 Min.\" (LKN AA.00.0060) pro tage abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Vor-und Nachbesprechung diagnostischer/therapeutischer Eingriffe mit Patienten, pro 1 Min.\" (LKN AA.00.0060) pro Tage abgerechnet werden?",
         "answers": [
-            "Maximal 120 mal pro tage",
-            "Maximal 60 mal pro tage",
-            "Beliebig oft pro tage"
+            "Maximal 120 mal pro 90 Tage",
+            "Maximal 60 mal pro 90 Tage",
+            "Beliebig oft pro 90 Tage"
         ],
         "correct_answer_index": 1
     },
     {
         "title": "Mengenbeschränkung AA.00.0070",
-        "question": "Wie oft darf die Leistung „Instruktion von Selbstmessungen und/oder Selbstbehandlungen durch den Arzt, pro 1 Min.\" (LKN AA.00.0070) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Instruktion von Selbstmessungen und/oder Selbstbehandlungen durch den Arzt, pro 1 Min.\" (LKN AA.00.0070) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Beliebig oft pro sitzung",
-            "Maximal 30 mal pro sitzung",
-            "Maximal 15 mal pro sitzung"
+            "Beliebig oft pro Sitzung",
+            "Maximal 30 mal pro Sitzung",
+            "Maximal 15 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
     {
         "title": "Mengenbeschränkung AA.00.0070",
-        "question": "Wie oft darf die Leistung „Instruktion von Selbstmessungen und/oder Selbstbehandlungen durch den Arzt, pro 1 Min.\" (LKN AA.00.0070) pro tage abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Instruktion von Selbstmessungen und/oder Selbstbehandlungen durch den Arzt, pro 1 Min.\" (LKN AA.00.0070) pro Tage abgerechnet werden?",
         "answers": [
-            "Beliebig oft pro tage",
-            "Maximal 30 mal pro tage",
-            "Maximal 60 mal pro tage"
+            "Beliebig oft pro Tage",
+            "Maximal 30 mal pro Tage",
+            "Maximal 60 mal pro Tage"
         ],
         "correct_answer_index": 1
     },
     {
         "title": "Mengenbeschränkung AA.00.0080",
-        "question": "Wie oft darf die Leistung „Ärztliches Konsilium, pro 1 Min.\" (LKN AA.00.0080) pro tage abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Ärztliches Konsilium, pro 1 Min.\" (LKN AA.00.0080) pro Tage abgerechnet werden?",
         "answers": [
-            "Beliebig oft pro tage",
-            "Maximal 240 mal pro tage",
-            "Maximal 120 mal pro tage"
+            "Beliebig oft pro Tage",
+            "Maximal 240 mal pro Tage",
+            "Maximal 120 mal pro Tage"
         ],
         "correct_answer_index": 2
     },
@@ -771,11 +771,11 @@
     },
     {
         "title": "Mengenbeschränkung AA.00.0090",
-        "question": "Wie oft darf die Leistung „Spezifische lmpfberatung bei franchisebefreiten lmpfungen, pro 1 Min.\" (LKN AA.00.0090) pro tage abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Spezifische lmpfberatung bei franchisebefreiten lmpfungen, pro 1 Min.\" (LKN AA.00.0090) pro Tage abgerechnet werden?",
         "answers": [
-            "Maximal 20 mal pro tage",
-            "Beliebig oft pro tage",
-            "Maximal 40 mal pro tage"
+            "Maximal 20 mal pro Tage",
+            "Beliebig oft pro Tage",
+            "Maximal 40 mal pro Tage"
         ],
         "correct_answer_index": 0
     },
@@ -791,151 +791,151 @@
     },
     {
         "title": "Mengenbeschränkung AA.05.0010",
-        "question": "Wie oft darf die Leistung „Untersuchung: Kreislauf\" (LKN AA.05.0010) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Kreislauf\" (LKN AA.05.0010) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Beliebig oft pro sitzung",
-            "Maximal 5 mal pro sitzung",
-            "Maximal 1 mal pro sitzung"
+            "Beliebig oft pro Sitzung",
+            "Maximal 5 mal pro Sitzung",
+            "Maximal 1 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
     {
         "title": "Mengenbeschränkung AA.05.0020",
-        "question": "Wie oft darf die Leistung „Untersuchung: Augen\" (LKN AA.05.0020) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Augen\" (LKN AA.05.0020) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Beliebig oft pro sitzung",
-            "Maximal 2 mal pro sitzung",
-            "Maximal 1 mal pro sitzung"
+            "Beliebig oft pro Sitzung",
+            "Maximal 2 mal pro Sitzung",
+            "Maximal 1 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
     {
         "title": "Mengenbeschränkung AA.05.0030",
-        "question": "Wie oft darf die Leistung „Untersuchung: Ohren\" (LKN AA.05.0030) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Ohren\" (LKN AA.05.0030) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 3 mal pro sitzung",
-            "Maximal 1 mal pro sitzung",
-            "Beliebig oft pro sitzung"
+            "Maximal 3 mal pro Sitzung",
+            "Maximal 1 mal pro Sitzung",
+            "Beliebig oft pro Sitzung"
         ],
         "correct_answer_index": 1
     },
     {
         "title": "Mengenbeschränkung AA.05.0040",
-        "question": "Wie oft darf die Leistung „Untersuchung: Luftwege\" (LKN AA.05.0040) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Luftwege\" (LKN AA.05.0040) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Beliebig oft pro sitzung",
-            "Maximal 5 mal pro sitzung",
-            "Maximal 1 mal pro sitzung"
+            "Beliebig oft pro Sitzung",
+            "Maximal 5 mal pro Sitzung",
+            "Maximal 1 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
     {
         "title": "Mengenbeschränkung AA.05.0050",
-        "question": "Wie oft darf die Leistung „Untersuchung: Wirbelsäule\" (LKN AA.05.0050) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Wirbelsäule\" (LKN AA.05.0050) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 3 mal pro sitzung",
-            "Maximal 1 mal pro sitzung",
-            "Beliebig oft pro sitzung"
+            "Maximal 3 mal pro Sitzung",
+            "Maximal 1 mal pro Sitzung",
+            "Beliebig oft pro Sitzung"
         ],
         "correct_answer_index": 1
     },
     {
         "title": "Mengenbeschränkung AA.05.0060",
-        "question": "Wie oft darf die Leistung „Untersuchung: Abdomen\" (LKN AA.05.0060) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Abdomen\" (LKN AA.05.0060) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 5 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 1 mal pro sitzung"
+            "Maximal 5 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 1 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
     {
         "title": "Mengenbeschränkung AA.05.0070",
-        "question": "Wie oft darf die Leistung „Untersuchung: Uro-Genital\" (LKN AA.05.0070) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Uro-Genital\" (LKN AA.05.0070) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 1 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 2 mal pro sitzung"
+            "Maximal 1 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 2 mal pro Sitzung"
         ],
         "correct_answer_index": 0
     },
     {
         "title": "Mengenbeschränkung AA.05.0080",
-        "question": "Wie oft darf die Leistung „Untersuchung: Haut\" (LKN AA.05.0080) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Haut\" (LKN AA.05.0080) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 3 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 1 mal pro sitzung"
+            "Maximal 3 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 1 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
     {
         "title": "Mengenbeschränkung AA.05.0090",
-        "question": "Wie oft darf die Leistung „Untersuchung: Muskulatur\" (LKN AA.05.0090) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Muskulatur\" (LKN AA.05.0090) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 2 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 1 mal pro sitzung"
+            "Maximal 2 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 1 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
     {
         "title": "Mengenbeschränkung AA.05.0100",
-        "question": "Wie oft darf die Leistung „Untersuchung: Gelenke\" (LKN AA.05.0100) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Gelenke\" (LKN AA.05.0100) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Beliebig oft pro sitzung",
-            "Maximal 2 mal pro sitzung",
-            "Maximal 1 mal pro sitzung"
+            "Beliebig oft pro Sitzung",
+            "Maximal 2 mal pro Sitzung",
+            "Maximal 1 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
     {
         "title": "Mengenbeschränkung AA.05.0110",
-        "question": "Wie oft darf die Leistung „Untersuchung: Gefässe\" (LKN AA.05.0110) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Gefässe\" (LKN AA.05.0110) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 1 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 5 mal pro sitzung"
+            "Maximal 1 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 5 mal pro Sitzung"
         ],
         "correct_answer_index": 0
     },
     {
         "title": "Mengenbeschränkung AA.05.0120",
-        "question": "Wie oft darf die Leistung „Untersuchung: Lymphatische Organe\" (LKN AA.05.0120) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Lymphatische Organe\" (LKN AA.05.0120) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Beliebig oft pro sitzung",
-            "Maximal 2 mal pro sitzung",
-            "Maximal 1 mal pro sitzung"
+            "Beliebig oft pro Sitzung",
+            "Maximal 2 mal pro Sitzung",
+            "Maximal 1 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
     {
         "title": "Mengenbeschränkung AA.05.0130",
-        "question": "Wie oft darf die Leistung „Untersuchung: Neurologie\" (LKN AA.05.0130) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Neurologie\" (LKN AA.05.0130) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Beliebig oft pro sitzung",
-            "Maximal 1 mal pro sitzung",
-            "Maximal 2 mal pro sitzung"
+            "Beliebig oft pro Sitzung",
+            "Maximal 1 mal pro Sitzung",
+            "Maximal 2 mal pro Sitzung"
         ],
         "correct_answer_index": 1
     },
     {
         "title": "Mengenbeschränkung AA.05.0140",
-        "question": "Wie oft darf die Leistung „Untersuchung: Pubertätsentwicklung\" (LKN AA.05.0140) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Pubertätsentwicklung\" (LKN AA.05.0140) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 1 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 5 mal pro sitzung"
+            "Maximal 1 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 5 mal pro Sitzung"
         ],
         "correct_answer_index": 0
     },
     {
         "title": "Mengenbeschränkung AA.10.0010",
-        "question": "Wie oft darf die Leistung „Ärztliche, telemedizinische zeitgleiche Konsultation, erste 5 Min.\" (LKN AA.10.0010) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Ärztliche, telemedizinische zeitgleiche Konsultation, erste 5 Min.\" (LKN AA.10.0010) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Beliebig oft pro sitzung",
-            "Maximal 5 mal pro sitzung",
-            "Maximal 1 mal pro sitzung"
+            "Beliebig oft pro Sitzung",
+            "Maximal 5 mal pro Sitzung",
+            "Maximal 1 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
@@ -951,11 +951,11 @@
     },
     {
         "title": "Mengenbeschränkung AA.10.0020",
-        "question": "Wie oft darf die Leistung „+ Ärztliche, telemedizinische zeitgleiche Konsultation, jede weitere 1 Min.\" (LKN AA.10.0020) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „+ Ärztliche, telemedizinische zeitgleiche Konsultation, jede weitere 1 Min.\" (LKN AA.10.0020) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 15 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 30 mal pro sitzung"
+            "Maximal 15 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 30 mal pro Sitzung"
         ],
         "correct_answer_index": 0
     },
@@ -971,11 +971,11 @@
     },
     {
         "title": "Mengenbeschränkung AA.10.0030",
-        "question": "Wie oft darf die Leistung „Ärztliche, telemedizinische zeitversetzte Konsultation\" (LKN AA.10.0030) pro tage abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Ärztliche, telemedizinische zeitversetzte Konsultation\" (LKN AA.10.0030) pro Tage abgerechnet werden?",
         "answers": [
-            "Maximal 4 mal pro tage",
-            "Maximal 6 mal pro tage",
-            "Beliebig oft pro tage"
+            "Maximal 4 mal pro Tage",
+            "Maximal 6 mal pro Tage",
+            "Beliebig oft pro Tage"
         ],
         "correct_answer_index": 0
     },
@@ -991,11 +991,11 @@
     },
     {
         "title": "Mengenbeschränkung AA.15.0050",
-        "question": "Wie oft darf die Leistung „Ärztliches Expertenboard in An- oder Abwesenheit des Patienten, pro 1 Min.\" (LKN AA.15.0050) pro tage abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Ärztliches Expertenboard in An- oder Abwesenheit des Patienten, pro 1 Min.\" (LKN AA.15.0050) pro Tage abgerechnet werden?",
         "answers": [
-            "Maximal 30 mal pro tage",
-            "Maximal 60 mal pro tage",
-            "Beliebig oft pro tage"
+            "Maximal 30 mal pro Tage",
+            "Maximal 60 mal pro Tage",
+            "Beliebig oft pro Tage"
         ],
         "correct_answer_index": 0
     },
@@ -1021,11 +1021,11 @@
     },
     {
         "title": "Mengenbeschränkung AA.20.0020",
-        "question": "Wie oft darf die Leistung „Regionalanästhesie durch den Nichtanästhesisten (Operateur)\" (LKN AA.20.0020) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Regionalanästhesie durch den Nichtanästhesisten (Operateur)\" (LKN AA.20.0020) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 3 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 1 mal pro sitzung"
+            "Maximal 3 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 1 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
@@ -1051,21 +1051,21 @@
     },
     {
         "title": "Mengenbeschränkung AA.20.0040",
-        "question": "Wie oft darf die Leistung „Stomapflege ohne Irrigation\" (LKN AA.20.0040) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Stomapflege ohne Irrigation\" (LKN AA.20.0040) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 1 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 3 mal pro sitzung"
+            "Maximal 1 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 3 mal pro Sitzung"
         ],
         "correct_answer_index": 0
     },
     {
         "title": "Mengenbeschränkung AA.20.0050",
-        "question": "Wie oft darf die Leistung „Stomapflege mit Irrigation\" (LKN AA.20.0050) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Stomapflege mit Irrigation\" (LKN AA.20.0050) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 3 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 1 mal pro sitzung"
+            "Maximal 3 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 1 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
@@ -1081,11 +1081,11 @@
     },
     {
         "title": "Mengenbeschränkung AA.25.0010",
-        "question": "Wie oft darf die Leistung „Erstellung eines ärztlichen Berichts zuhanden eines anderen Arztes, eines Therapeuten oder der Pflege, pro 1 Min.\" (LKN AA.25.0010) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Erstellung eines ärztlichen Berichts zuhanden eines anderen Arztes, eines Therapeuten oder der Pflege, pro 1 Min.\" (LKN AA.25.0010) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Beliebig oft pro sitzung",
-            "Maximal 40 mal pro sitzung",
-            "Maximal 20 mal pro sitzung"
+            "Beliebig oft pro Sitzung",
+            "Maximal 40 mal pro Sitzung",
+            "Maximal 20 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
@@ -1101,11 +1101,11 @@
     },
     {
         "title": "Mengenbeschränkung AA.25.0020",
-        "question": "Wie oft darf die Leistung „Erstellung eines ärztlichen Berichts zuhanden des Patienten oder eines Angehörigen, pro 1 Min.\" (LKN AA.25.0020) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Erstellung eines ärztlichen Berichts zuhanden des Patienten oder eines Angehörigen, pro 1 Min.\" (LKN AA.25.0020) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 40 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 20 mal pro sitzung"
+            "Maximal 40 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 20 mal pro Sitzung"
         ],
         "correct_answer_index": 2
     },
@@ -1121,11 +1121,11 @@
     },
     {
         "title": "Mengenbeschränkung AA.25.0030",
-        "question": "Wie oft darf die Leistung „Erstellung eines ärztlichen Berichts zuhanden des Versicherers, pro 1 Min.\" (LKN AA.25.0030) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Erstellung eines ärztlichen Berichts zuhanden des Versicherers, pro 1 Min.\" (LKN AA.25.0030) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 20 mal pro sitzung",
-            "Beliebig oft pro sitzung",
-            "Maximal 40 mal pro sitzung"
+            "Maximal 20 mal pro Sitzung",
+            "Beliebig oft pro Sitzung",
+            "Maximal 40 mal pro Sitzung"
         ],
         "correct_answer_index": 0
     },
@@ -1141,11 +1141,11 @@
     },
     {
         "title": "Mengenbeschränkung AA.25.0040",
-        "question": "Wie oft darf die Leistung „Erstellung eines ärztlichen Zeugnisses in Abwesenheit des Patienten\" (LKN AA.25.0040) pro sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Erstellung eines ärztlichen Zeugnisses in Abwesenheit des Patienten\" (LKN AA.25.0040) pro Sitzung abgerechnet werden?",
         "answers": [
-            "Maximal 5 mal pro sitzung",
-            "Maximal 1 mal pro sitzung",
-            "Beliebig oft pro sitzung"
+            "Maximal 5 mal pro Sitzung",
+            "Maximal 1 mal pro Sitzung",
+            "Beliebig oft pro Sitzung"
         ],
         "correct_answer_index": 1
     }
