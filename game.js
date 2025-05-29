@@ -71,6 +71,7 @@ const quizFeedback = document.getElementById('quizFeedback');
 const gameEndPlayAgainButton = document.getElementById('gameEndPlayAgainButton'); 
 const loadingScreen = document.getElementById('loadingScreen');
 const gameContainer = document.getElementById('gameContainer');
+// const startPrompt = document.getElementById('startPrompt'); // This line was removed in the previous step
 
 // Keyboard control flags (for paddle)
 let arrowLeftPressed = false;
@@ -95,9 +96,13 @@ async function tryDecodeAllSounds() {
             decodePromises.push(decodePromise);
         }
     }
-    try { await Promise.all(decodePromises); } 
-    catch (error) { console.error('An error occurred during the Promise.all of pre-decoding sounds:', error); }
-    allSoundsPreDecoded = true; 
+    try { 
+        await Promise.all(decodePromises); 
+        allSoundsPreDecoded = true; // Set only after successful completion
+    } 
+    catch (error) { 
+        console.error('An error occurred during the Promise.all of pre-decoding sounds:', error); 
+    }
 }
 
 function updateScoreDisplay() {
@@ -127,12 +132,15 @@ async function loadAllSounds() {
     catch (error) { console.error('Error loading one or more sounds (Promise.all rejected):', error); }
 }
 
-function playSound(soundName) {
+function playSound(soundName) { 
     if (!audioCtx) return;
+
     const playLogic = () => {
         const soundData = gameSounds[soundName];
         if (!soundData) return;
-        if (soundData instanceof ArrayBuffer) {
+
+        if (soundData instanceof ArrayBuffer) { 
+            console.warn(`Sound ${soundName} is still ArrayBuffer, decoding on-the-fly.`);
             audioCtx.decodeAudioData(soundData.slice(0), (decodedBuffer) => {
                 gameSounds[soundName] = decodedBuffer; 
                 const source = audioCtx.createBufferSource();
@@ -140,19 +148,25 @@ function playSound(soundName) {
                 source.connect(audioCtx.destination);
                 source.start(0);
             }, (error) => { console.error(`Error decoding ${soundName}: `, error); });
-        } else if (soundData instanceof AudioBuffer) { 
+        } else if (soundData instanceof AudioBuffer) {
             const source = audioCtx.createBufferSource();
             source.buffer = soundData;
             source.connect(audioCtx.destination);
             source.start(0);
         }
     };
-    const attemptPlayActions = () => {
-        if (audioCtx.state === 'running' && !allSoundsPreDecoded) tryDecodeAllSounds(); 
-        playLogic(); 
-    };
-    if (audioCtx.state === 'suspended') audioCtx.resume().then(attemptPlayActions).catch(e => console.error('Error resuming AudioContext:', e));
-    else if (audioCtx.state === 'running') attemptPlayActions();
+
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume().then(() => {
+            if (audioCtx.state === 'running') {
+                playLogic();
+            } else {
+                console.error('AudioContext could not be resumed.');
+            }
+        }).catch(e => console.error('Error resuming AudioContext during playSound:', e));
+    } else if (audioCtx.state === 'running') {
+        playLogic();
+    }
 }
 
 let quizQuestions = [];
@@ -164,7 +178,7 @@ async function loadQuestions() {
     } catch (error) { console.error('Error loading questions:', error); }
 }
 
-// 3. Game Entities
+// 3. Game Entities (Paddle, Ball, Brick classes remain unchanged)
 class Paddle { 
     constructor() {
         this.width = PADDLE_WIDTH; this.height = PADDLE_HEIGHT;
@@ -252,7 +266,7 @@ function initializeBricks() {
     }
 }
 
-// 4. Rendering Function
+// 4. Rendering Function (drawGame remains unchanged)
 function drawGame() { 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     if (backgroundLoaded) ctx.drawImage(backgroundImage, 0, 0, canvasWidth, canvasHeight);
@@ -260,7 +274,7 @@ function drawGame() {
     paddle.draw(ctx); ball.draw(ctx); bricks.forEach(brick => brick.draw(ctx));
 }
 
-// Update game state
+// Update game state (update remains unchanged)
 function update() { 
     if (gameIsOver || quizActive) return; 
     if (ballSpeedBoostActive && Date.now() - boostStartTime >= 10000) {
@@ -268,7 +282,6 @@ function update() {
         ballSpeedBoostActive = false;
     } 
     
-    // Keyboard paddle movement (now handled in the combined keydown listener)
     if (arrowLeftPressed) {
         paddle.x -= PADDLE_SPEED;
     }
@@ -276,14 +289,13 @@ function update() {
         paddle.x += PADDLE_SPEED;
     }
 
-    // Boundary checks for paddle (important for both mouse and keyboard)
     if (paddle.x < 0) paddle.x = 0;
     if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
     
     ball.update(); checkWinCondition(); 
 }
 
-// Quiz Functions
+// Quiz Functions (getNewQuizQuestion, updateQuizAnswerSelectionVisuals, startQuiz, handleAnswer, endQuiz remain unchanged)
 function getNewQuizQuestion() { 
     if (shuffledQuizQueue.length === 0) {
         if (quizQuestions.length === 0) return null;
@@ -372,6 +384,7 @@ function endQuiz() {
     checkWinCondition(); 
 }
 
+// resetGame, checkWinCondition, showGameEndPopup remain unchanged
 function resetGame() { 
     score = 0; updateScoreDisplay(); initializeBricks(); 
     paddle.x = (canvasWidth - PADDLE_WIDTH) / 2; paddle.y = canvasHeight - PADDLE_HEIGHT - 10;
@@ -427,12 +440,47 @@ function showGameEndPopup() {
 const paddle = new Paddle();
 const ball = new Ball();
 
+// Target initializeGame structure
 async function initializeGame() {
     await Promise.all([loadQuestions(), loadAllSounds()]);
     if (loadingScreen) loadingScreen.style.display = 'none';
-    resetGame(); 
 
-    // Combined Keydown Listener (Popups & Paddle)
+    // Define an async function for audio setup
+    const setupAudioAsync = async () => {
+        try {
+            if (audioCtx.state === 'suspended') {
+                console.log("AudioContext suspended, attempting to resume...");
+                await audioCtx.resume();
+            }
+
+            if (audioCtx.state === 'running') {
+                console.log("AudioContext running, attempting to pre-decode sounds...");
+                if (!allSoundsPreDecoded) { // Check flag before attempting
+                    await tryDecodeAllSounds();
+                    console.log("tryDecodeAllSounds completed.");
+                } else {
+                    console.log("Sounds already pre-decoded.");
+                }
+            } else {
+                console.warn("AudioContext not running after initial resume attempt during setupAudioAsync. Sound might be delayed until first user interaction via playSound.");
+            }
+        } catch (e) {
+            console.error("Error during setupAudioAsync: ", e);
+        }
+    };
+
+    // Call the audio setup function but don't await it in the main flow
+    setupAudioAsync().catch(e => console.error("Error from setupAudioAsync promise: ", e));
+
+    // These must run immediately after starting the audio setup,
+    // regardless of its completion.
+    resetGame(); 
+    gameLoop();
+    console.log("Game start initiated automatically after loading.");
+
+    // Global event listeners (keydown for game control, keyup, mousemove)
+    // These are added once here and have internal checks (e.g., !quizActive, !gameIsOver)
+    // to ensure they only act when appropriate.
     document.addEventListener('keydown', (event) => { 
         if (gameEndNavActive) {
             if (['Enter', 'Escape'].includes(event.key)) { 
@@ -463,7 +511,7 @@ async function initializeGame() {
                         handleAnswer(selectedAnswerIndex);
                     }
                 }
-            } else if (event.key === 'Escape') {
+            } else if (event.key === 'Escape') { // Escape from Quiz
                 endQuiz();
             }
             return; 
@@ -472,12 +520,12 @@ async function initializeGame() {
         // Global Escape to hide game container if no popups are active
         if (event.key === 'Escape' && !quizActive && !gameEndNavActive && !gameIsOver) {
             if (gameContainer) gameContainer.style.display = 'none';
-            gameIsOver = true; // Stop game logic
-            // Consider adding a message to the user or a way to unhide, if required by future tasks
+            gameIsOver = true; 
             return; 
         }
         
-        if (!quizActive && !gameIsOver) { 
+        // Paddle controls - only if game is active and no popups are shown
+        if (!quizActive && !gameIsOver && !gameEndNavActive) { 
             if (event.key === "ArrowLeft") arrowLeftPressed = true;
             else if (event.key === "ArrowRight") arrowRightPressed = true;
         }
@@ -488,9 +536,8 @@ async function initializeGame() {
         else if (event.key === "ArrowRight") arrowRightPressed = false;
     });
 
-    // Mouse move listener for paddle (document-level)
     document.addEventListener('mousemove', (event) => {
-        if (quizActive || gameEndNavActive || gameIsOver) { // Ensure paddle doesn't move when any popup/overlay is active
+        if (quizActive || gameEndNavActive || gameIsOver) { 
             return; 
         }
         const rect = canvas.getBoundingClientRect();
@@ -510,8 +557,6 @@ async function initializeGame() {
             resetGame(); 
         });
     }
-
-    gameLoop();
 }
 
 function gameLoop() {
@@ -521,4 +566,4 @@ function gameLoop() {
 }
 
 initializeGame();
-console.log("game.js loaded with continuous mouse paddle control and full keyboard navigation for popups.");
+console.log("game.js loaded and initialized with non-blocking audio setup.");
