@@ -69,6 +69,8 @@ const quizQuestionEl = document.getElementById('quizQuestion');
 const quizAnswersEl = document.getElementById('quizAnswers');   
 const quizFeedback = document.getElementById('quizFeedback');
 const gameEndPlayAgainButton = document.getElementById('gameEndPlayAgainButton'); 
+const loadingScreen = document.getElementById('loadingScreen');
+const gameContainer = document.getElementById('gameContainer');
 
 // Keyboard control flags (for paddle)
 let arrowLeftPressed = false;
@@ -427,6 +429,7 @@ const ball = new Ball();
 
 async function initializeGame() {
     await Promise.all([loadQuestions(), loadAllSounds()]);
+    if (loadingScreen) loadingScreen.style.display = 'none';
     resetGame(); 
 
     // Combined Keydown Listener (Popups & Paddle)
@@ -463,6 +466,14 @@ async function initializeGame() {
             } else if (event.key === 'Escape') {
                 endQuiz();
             }
+            return; 
+        }
+
+        // Global Escape to hide game container if no popups are active
+        if (event.key === 'Escape' && !quizActive && !gameEndNavActive && !gameIsOver) {
+            if (gameContainer) gameContainer.style.display = 'none';
+            gameIsOver = true; // Stop game logic
+            // Consider adding a message to the user or a way to unhide, if required by future tasks
             return; 
         }
         
