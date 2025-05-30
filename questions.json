@@ -671,7 +671,7 @@
     },
     {
         "title": "Mengenbeschränkung AA.00.0020",
-        "question": "Wie oft darf die Leistung „+ Ärztliche Konsultation, jede weitere 1 Min.\" (LKN AA.00.0020) pro Sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „+ Ärztliche Konsultation, jede weitere 1 Min.\" (AA.00.0020) pro Sitzung abgerechnet werden?",
         "answers": [
             "Maximal 15 pro Sitzung",
             "Maximal 20 pro Sitzung",
@@ -701,7 +701,7 @@
     },
     {
         "title": "Mengenbeschränkung AA.00.0040",
-        "question": "Wie oft darf die Leistung „+ Besuch, jede weitere 1 Min.\" (LKN AA.00.0040) pro Sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „+ Besuch, jede weitere 1 Min.\" (AA.00.0040) pro Sitzung abgerechnet werden?",
         "answers": [
             "Maximal 15 pro Sitzung",
             "Maximal 20 pro Sitzung",
@@ -731,7 +731,7 @@
     },
     {
         "title": "Mengenbeschränkung AA.00.0070",
-        "question": "Wie oft darf die Leistung „Instruktion von Selbstmessungen und/oder Selbstbehandlungen durch den Arzt, pro 1 Min.\" (LKN AA.00.0070) pro Sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Instruktion von Selbstmessungen und/oder Selbstbehandlungen durch den Arzt, pro 1 Min.\" (AA.00.0070) pro Sitzung abgerechnet werden?",
         "answers": [
             "Maximal 15 pro Sitzung",
             "Maximal 20 pro Sitzung",
@@ -741,7 +741,7 @@
     },
     {
         "title": "Mengenbeschränkung AA.00.0070",
-        "question": "Wie oft darf die Leistung „Instruktion von Selbstmessungen und/oder Selbstbehandlungen durch den Arzt, pro 1 Min.\" (LKN AA.00.0070) pro 90 Tage abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Instruktion von Selbstmessungen und/oder Selbstbehandlungen durch den Arzt, pro 1 Min.\" (AA.00.0070) pro 90 Tage abgerechnet werden?",
         "answers": [
             "Maximal 15 pro 90 Tage",
             "Maximal 20 pro 90 Tage",
@@ -751,7 +751,7 @@
     },
     {
         "title": "Mengenbeschränkung AA.00.0080",
-        "question": "Wie oft darf die Leistung „Ärztliches Konsilium, pro 1 Min.\" (LKN AA.00.0080) pro 180 Tage abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Ärztliches Konsilium, pro 1 Min.\" (AA.00.0080) pro 180 Tage abgerechnet werden?",
         "answers": [
             "Maximal 120 pro 180 Tage",
             "Maximal 130 pro 180 Tage",
@@ -771,7 +771,7 @@
     },
     {
         "title": "Mengenbeschränkung AA.00.0090",
-        "question": "Wie oft darf die Leistung „Spezifische lmpfberatung bei franchisebefreiten lmpfungen, pro 1 Min.\" (LKN AA.00.0090) pro 90 Tage abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Spezifische lmpfberatung bei franchisebefreiten lmpfungen, pro 1 Min.\" (AA.00.0090) pro 90 Tage abgerechnet werden?",
         "answers": [
             "Maximal 20 pro 90 Tage",
             "Maximal 25 pro 90 Tage",
@@ -791,7 +791,7 @@
     },
     {
         "title": "Mengenbeschränkung AA.05.0010",
-        "question": "Wie oft darf die Leistung „Untersuchung: Kreislauf\" (LKN AA.05.0010) pro Sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Kreislauf\" (AA.05.0010) pro Sitzung abgerechnet werden?",
         "answers": [
             "Maximal 1 pro Sitzung",
             "Maximal 6 pro Sitzung",
@@ -801,7 +801,7 @@
     },
     {
         "title": "Mengenbeschränkung AA.05.0020",
-        "question": "Wie oft darf die Leistung „Untersuchung: Augen\" (LKN AA.05.0020) pro Sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Augen\" (AA.05.0020) pro Sitzung abgerechnet werden?",
         "answers": [
             "Maximal 1 pro Sitzung",
             "Maximal 6 pro Sitzung",
@@ -811,7 +811,7 @@
     },
     {
         "title": "Mengenbeschränkung AA.05.0030",
-        "question": "Wie oft darf die Leistung „Untersuchung: Ohren\" (LKN AA.05.0030) pro Sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Ohren\" (AA.05.0030) pro Sitzung abgerechnet werden?",
         "answers": [
             "Maximal 1 pro Sitzung",
             "Maximal 6 pro Sitzung",
@@ -831,7 +831,7 @@
     },
     {
         "title": "Mengenbeschränkung AA.05.0050",
-        "question": "Wie oft darf die Leistung „Untersuchung: Wirbelsäule\" (LKN AA.05.0050) pro Sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Wirbelsäule\" (AA.05.0050) pro Sitzung abgerechnet werden?",
         "answers": [
             "Maximal 1 pro Sitzung",
             "Maximal 6 pro Sitzung",
@@ -861,7 +861,7 @@
     },
     {
         "title": "Mengenbeschränkung AA.05.0080",
-        "question": "Wie oft darf die Leistung „Untersuchung: Haut\" (LKN AA.05.0080) pro Sitzung abgerechnet werden?",
+        "question": "Wie oft darf die Leistung „Untersuchung: Haut\" (AA.05.0080) pro Sitzung abgerechnet werden?",
         "answers": [
             "Maximal 1 pro Sitzung",
             "Maximal 6 pro Sitzung",
