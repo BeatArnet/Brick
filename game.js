@@ -565,5 +565,25 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-initializeGame();
-console.log("game.js loaded and initialized with non-blocking audio setup.");
+// ----------- NEU: Steuerung für Startbildschirm und Spielstart ------------
+
+const startScreen = document.getElementById('startScreen');
+const startButton = document.getElementById('startButton');
+if (gameContainer) gameContainer.style.display = 'none'; // Spiel-Canvas ausblenden
+
+// Nur laden, nicht starten
+async function preloadGameAssets() {
+    await Promise.all([loadQuestions(), loadAllSounds()]);
+    if (loadingScreen) loadingScreen.style.display = 'none';
+    if (startButton) startButton.disabled = false; // Button aktivieren!
+}
+preloadGameAssets();
+
+// Klick auf "Spiel und Quiz beginnen" startet das Spiel wirklich
+if (startButton) {
+    startButton.addEventListener('click', function () {
+        if (startScreen) startScreen.style.display = 'none';
+        if (gameContainer) gameContainer.style.display = 'block';
+        initializeGame(); // Jetzt wirklich Spiel und Loop starten
+    });
+}

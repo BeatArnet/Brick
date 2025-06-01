@@ -174,3 +174,45 @@ body {
     color: #333;
     z-index: 1000; /* Ensure it's on top */
 }
+#startScreen {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(250,250,250,0.98);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 2000;
+}
+
+#startScreenContent {
+    text-align: center;
+}
+
+#startScreenTextLine1 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+#startScreenTextLine2 {
+    font-size: 1.2rem;
+    margin-bottom: 2.5rem;
+}
+
+#startButton {
+    font-size: 1.2rem;
+    padding: 14px 32px;
+    background-color: #0095DD;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: background 0.2s;
+}
+#startButton:disabled {
+    background-color: #bbbbbb;
+    cursor: not-allowed;
+}
+#startButton:not(:disabled):hover {
+    background-color: #0077bb;
+}

@@ -7,6 +7,13 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+	<div id="startScreen" style="display: flex;">
+		<div id="startScreenContent">
+			<div id="startScreenTextLine1">Willkommen zum Breakout Arzttarif!</div>
+			<div id="startScreenTextLine2">Zerstöre Steine und beantworte Quizfragen, um Punkte zu sammeln.</div>
+			<button id="startButton" disabled>Spiel und Quiz beginnen</button>
+		</div>
+	</div>
     <div id="loadingScreen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(200, 200, 200, 0.8); display: flex; justify-content: center; align-items: center; font-size: 24px; z-index: 1000;">Spiel und Quiz wird aufgestartet</div>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
