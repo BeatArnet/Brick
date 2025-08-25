@@ -11,7 +11,8 @@ const PADDLE_WIDTH = 100;
 const PADDLE_HEIGHT = 20;
 const PADDLE_SPEED = 8;
 const BALL_RADIUS = 10;
-const MAX_BALL_SPEED_X = 6; // For paddle collision adjustment
+let maxBallSpeedX = 6; // For paddle collision adjustment
+const BALL_TRAIL_MAX_LENGTH = 15;
 
 const BRICK_WIDTH = 70;
 const BRICK_HEIGHT = 25;
@@ -81,8 +82,34 @@ let arrowRightPressed = false;
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]]; 
+        [array[i], array[j]] = [array[j], array[i]];
     }
+}
+
+function lightenColor(color, percent) {
+    const num = parseInt(color.slice(1), 16);
+    const amt = Math.round(2.55 * percent);
+    let R = (num >> 16) + amt;
+    let G = (num >> 8 & 0x00FF) + amt;
+    let B = (num & 0x0000FF) + amt;
+    R = R < 255 ? (R < 0 ? 0 : R) : 255;
+    G = G < 255 ? (G < 0 ? 0 : G) : 255;
+    B = B < 255 ? (B < 0 ? 0 : B) : 255;
+    return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
 }
 
 function updateScoreDisplay() {
@@ -122,6 +149,8 @@ function playSound(soundName) {
     const baseSound = gameSounds[soundName];
     if (!baseSound) return;
     const sound = baseSound.cloneNode();
+    sound.volume = 0.7;
+    sound.playbackRate = 1 + (Math.random() * 0.2 - 0.1);
     sound.play().catch(e => console.error(`Error playing sound ${soundName}:`, e));
 }
 
@@ -141,12 +170,31 @@ class Paddle {
         this.color = PADDLE_COLORS[(currentIndex + 1) % PADDLE_COLORS.length];
     }
 }
-class Ball { 
+class Ball {
     constructor() {
         this.radius = BALL_RADIUS; this.x = canvasWidth / 2; this.y = canvasHeight / 2;
-        this.color = 'red'; this.dx = 4;  this.dy = -4; 
+        this.color = 'red'; this.dx = 4;  this.dy = -4;
+        this.trail = [];
     }
-    draw(ctx) { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); ctx.closePath(); }
+    draw(ctx) {
+        ctx.save();
+        for (let i = 0; i < this.trail.length; i++) {
+            const pos = this.trail[i];
+            const alpha = (i + 1) / this.trail.length * 0.5;
+            ctx.globalAlpha = alpha;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+        ctx.restore();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+    }
     update() {
         this.x += this.dx; this.y += this.dy;
         if (this.x + this.radius > canvasWidth || this.x - this.radius < 0) { this.dx *= -1; playSound('wall_hit'); }
@@ -154,9 +202,9 @@ class Ball {
         if (this.y + this.radius > canvasHeight) { playSound('game_over'); showGameEndPopup(); return; }
         if (this.dy > 0 && this.x + this.radius > paddle.x && this.x - this.radius < paddle.x + paddle.width &&
             this.y + this.radius > paddle.y && this.y - this.radius < paddle.y + paddle.height) {
-            this.dy *= -1; this.y = paddle.y - this.radius; 
-            this.dx = ((this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2)) * MAX_BALL_SPEED_X; 
-            playSound('paddle_hit'); paddle.changeColor(); 
+            this.dy *= -1; this.y = paddle.y - this.radius;
+            this.dx = ((this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2)) * maxBallSpeedX;
+            playSound('paddle_hit'); paddle.changeColor();
         }
         for (let i = 0; i < bricks.length; i++) {
             const brick = bricks[i];
@@ -167,6 +215,13 @@ class Ball {
                 // remove brick from active list to reduce future iterations
                 bricks.splice(i, 1);
                 score += 10; updateScoreDisplay(); playSound('brick_hit'); brickHitCount++;
+                if (brickHitCount % 10 === 0) {
+                    this.dx *= 1.1;
+                    this.dy *= 1.1;
+                    this.dx = Math.max(-12, Math.min(12, this.dx));
+                    this.dy = Math.max(-12, Math.min(12, this.dy));
+                    maxBallSpeedX *= 1.1;
+                }
                 const oX = this.radius - Math.abs(dX); const oY = this.radius - Math.abs(dY);
                 if (oX + 0.1 < oY) { this.dx *= -1; this.x += this.dx > 0 ? oX : -oX; }
                 else if (oY + 0.1 < oX) { this.dy *= -1; this.y += this.dy > 0 ? oY : -oY; }
@@ -175,6 +230,8 @@ class Ball {
                 break;
             }
         }
+        this.trail.push({ x: this.x, y: this.y });
+        if (this.trail.length > BALL_TRAIL_MAX_LENGTH) this.trail.shift();
     }
 }
 class Brick {
@@ -183,7 +240,16 @@ class Brick {
         this.color = color; this.isQuestionBrick = false;
     }
     draw(ctx) {
-        ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.width, this.height);
+        const radius = 6;
+        const gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+        gradient.addColorStop(0, lightenColor(this.color, 30));
+        gradient.addColorStop(1, this.color);
+        drawRoundedRect(ctx, this.x, this.y, this.width, this.height, radius);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff55';
+        ctx.lineWidth = 2;
+        ctx.stroke();
         if (this.isQuestionBrick) {
             const qT = "?"; const x = this.x + this.width / 2; const y = this.y + this.height / 2;
             ctx.font = "bold 16px Consolas"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -336,15 +402,15 @@ function endQuiz() {
 }
 
 // resetGame, checkWinCondition, showGameEndPopup remain unchanged
-function resetGame() { 
-    score = 0; updateScoreDisplay(); initializeBricks(); 
+function resetGame() {
+    score = 0; updateScoreDisplay(); initializeBricks();
     paddle.x = (canvasWidth - PADDLE_WIDTH) / 2; paddle.y = canvasHeight - PADDLE_HEIGHT - 10;
-    paddle.color = PADDLE_COLORS[0]; 
-    ball.x = canvasWidth / 2; ball.y = canvasHeight / 2; 
-    ball.dx = 4; ball.dy = -4; 
+    paddle.color = PADDLE_COLORS[0];
+    ball.x = canvasWidth / 2; ball.y = canvasHeight / 2;
+    ball.dx = 4; ball.dy = -4; ball.trail = [];
     quizActive = false; gameIsOver = false;
     if (ballSpeedBoostActive) { ball.dx = originalBallSpeedX; ball.dy = originalBallSpeedY; ballSpeedBoostActive = false; }
-    brickHitCount = 0; questionsAnsweredCorrectly = 0; questionsAnsweredTotal = 0;
+    brickHitCount = 0; questionsAnsweredCorrectly = 0; questionsAnsweredTotal = 0; maxBallSpeedX = 6;
     shuffledQuizQueue = [];
     if (quizQuestions.length > 0) {
         shuffledQuizQueue = quizQuestions.map((_, i) => i); shuffleArray(shuffledQuizQueue);
