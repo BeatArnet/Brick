@@ -210,38 +210,36 @@ class Ball {
         }
         for (let i = 0; i < bricks.length; i++) {
             const brick = bricks[i];
-            if (brick.visible) {
-                const closestX = Math.max(brick.x, Math.min(this.x, brick.x + brick.width));
-                const closestY = Math.max(brick.y, Math.min(this.y, brick.y + brick.height));
-                const dX = this.x - closestX; const dY = this.y - closestY;
-                if ((dX * dX + dY * dY) < (this.radius * this.radius)) {
-                    brick.visible = false; score += 10; updateScoreDisplay(); playSound('brick_hit'); brickHitCount++;
-                    const oX = this.radius - Math.abs(dX); const oY = this.radius - Math.abs(dY);
-                    if (oX + 0.1 < oY) { this.dx *= -1; this.x += this.dx > 0 ? oX : -oX; } 
-                    else if (oY + 0.1 < oX) { this.dy *= -1; this.y += this.dy > 0 ? oY : -oY; } 
-                    else { this.dx *= -1; this.dy *= -1; this.x += this.dx > 0 ? oX : -oX; this.y += this.dy > 0 ? oY : -oY; }
-                    if (brick.isQuestionBrick) { brick.isQuestionBrick = false; quizActive = true; startQuiz(); }
-                    break; 
-                }
+            const closestX = Math.max(brick.x, Math.min(this.x, brick.x + brick.width));
+            const closestY = Math.max(brick.y, Math.min(this.y, brick.y + brick.height));
+            const dX = this.x - closestX; const dY = this.y - closestY;
+            if ((dX * dX + dY * dY) < (this.radius * this.radius)) {
+                // remove brick from active list to reduce future iterations
+                bricks.splice(i, 1);
+                score += 10; updateScoreDisplay(); playSound('brick_hit'); brickHitCount++;
+                const oX = this.radius - Math.abs(dX); const oY = this.radius - Math.abs(dY);
+                if (oX + 0.1 < oY) { this.dx *= -1; this.x += this.dx > 0 ? oX : -oX; }
+                else if (oY + 0.1 < oX) { this.dy *= -1; this.y += this.dy > 0 ? oY : -oY; }
+                else { this.dx *= -1; this.dy *= -1; this.x += this.dx > 0 ? oX : -oX; this.y += this.dy > 0 ? oY : -oY; }
+                if (brick.isQuestionBrick) { quizActive = true; startQuiz(); }
+                break;
             }
         }
     }
 }
-class Brick { 
+class Brick {
     constructor(x, y, width, height, color) {
         this.x = x; this.y = y; this.width = width; this.height = height;
-        this.color = color; this.visible = true; this.isQuestionBrick = false; 
+        this.color = color; this.isQuestionBrick = false;
     }
     draw(ctx) {
-        if (this.visible) {
-            ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.width, this.height);
-            if (this.isQuestionBrick) {
-                const qT = "?"; const x = this.x + this.width / 2; const y = this.y + this.height / 2;
-                ctx.font = "bold 16px Consolas"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillStyle = "rgba(220,220,220,0.7)"; const o = 1; 
-                ctx.fillText(qT, x-o, y-o); ctx.fillText(qT, x+o, y-o); ctx.fillText(qT, x-o, y+o); ctx.fillText(qT, x+o, y+o);
-                ctx.fillStyle = "black"; ctx.fillText(qT, x, y);
-            }
+        ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.width, this.height);
+        if (this.isQuestionBrick) {
+            const qT = "?"; const x = this.x + this.width / 2; const y = this.y + this.height / 2;
+            ctx.font = "bold 16px Consolas"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillStyle = "rgba(220,220,220,0.7)"; const o = 1;
+            ctx.fillText(qT, x-o, y-o); ctx.fillText(qT, x+o, y-o); ctx.fillText(qT, x-o, y+o); ctx.fillText(qT, x+o, y+o);
+            ctx.fillStyle = "black"; ctx.fillText(qT, x, y);
         }
     }
 }
@@ -271,7 +269,10 @@ function drawGame() {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     if (backgroundLoaded) ctx.drawImage(backgroundImage, 0, 0, canvasWidth, canvasHeight);
     else { ctx.fillStyle = '#f0f0f0'; ctx.fillRect(0, 0, canvasWidth, canvasHeight); }
-    paddle.draw(ctx); ball.draw(ctx); bricks.forEach(brick => brick.draw(ctx));
+    paddle.draw(ctx); ball.draw(ctx);
+    for (let i = 0; i < bricks.length; i++) {
+        bricks[i].draw(ctx);
+    }
 }
 
 // Update game state (update remains unchanged)
@@ -408,9 +409,9 @@ function resetGame() {
     }
 }
 
-function checkWinCondition() { 
-    if (!bricks || bricks.length === 0) return; 
-    if (bricks.every(brick => !brick.visible) && !quizActive) showGameEndPopup();
+function checkWinCondition() {
+    if (!bricks) return;
+    if (bricks.length === 0 && !quizActive) showGameEndPopup();
 }
 
 function showGameEndPopup() { 
