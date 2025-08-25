@@ -1,4 +1,4 @@
-import questionsData from './questions.json' assert { type: 'json' };
+// questionsData is provided globally by questions.js
 
 // 1. Canvas and Context
 const canvas = document.getElementById('gameCanvas');
@@ -125,8 +125,8 @@ function playSound(soundName) {
     sound.play().catch(e => console.error(`Error playing sound ${soundName}:`, e));
 }
 
-let quizQuestions = questionsData;
-async function loadQuestions() { quizQuestions = questionsData; }
+let quizQuestions = window.questionsData || [];
+function loadQuestions() { quizQuestions = window.questionsData || []; }
 
 // 3. Game Entities (Paddle, Ball, Brick classes remain unchanged)
 class Paddle { 
@@ -495,9 +495,13 @@ if (gameContainer) gameContainer.style.display = 'none'; // Spiel-Canvas ausblen
 
 // Nur laden, nicht starten
 async function preloadGameAssets() {
-    await Promise.all([loadQuestions(), loadAllSounds()]);
-    if (loadingScreen) loadingScreen.style.display = 'none';
-    if (startButton) startButton.disabled = false; // Button aktivieren!
+    loadQuestions();
+    try {
+        await loadAllSounds();
+    } finally {
+        if (loadingScreen) loadingScreen.style.display = 'none';
+        if (startButton) startButton.disabled = false; // Button aktivieren!
+    }
 }
 preloadGameAssets();
 
