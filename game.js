@@ -66,10 +66,24 @@ let gameEndNavActive = false;
 // DOM Elements
 const quizPopup = document.getElementById('quizPopup');
 const quizTitle = document.getElementById('quizTitle');
-const quizQuestionEl = document.getElementById('quizQuestion'); 
-const quizAnswersEl = document.getElementById('quizAnswers');   
+const quizQuestionEl = document.getElementById('quizQuestion');
+const quizAnswersEl = document.getElementById('quizAnswers');
 const quizFeedback = document.getElementById('quizFeedback');
-const gameEndPlayAgainButton = document.getElementById('gameEndPlayAgainButton'); 
+let gameEndPlayAgainButton;
+
+document.addEventListener('DOMContentLoaded', () => {
+    gameEndPlayAgainButton = document.getElementById('gameEndPlayAgainButton');
+    if (gameEndPlayAgainButton) {
+        gameEndPlayAgainButton.addEventListener('click', () => {
+            const gameEndPopup = document.getElementById('gameEndPopup');
+            if (gameEndPopup) gameEndPopup.style.display = 'none';
+            gameEndNavActive = false;
+            gameEndPlayAgainButton.classList.remove('game-end-button-active');
+            resetGame();
+        });
+    }
+});
+
 const loadingScreen = document.getElementById('loadingScreen');
 const gameContainer = document.getElementById('gameContainer');
 // const startPrompt = document.getElementById('startPrompt'); // This line was removed in the previous step
@@ -536,15 +550,7 @@ async function initializeGame() {
         if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
     });
     
-    if (gameEndPlayAgainButton) {
-        gameEndPlayAgainButton.addEventListener('click', function() { 
-            const gameEndPopup = document.getElementById('gameEndPopup');
-            if (gameEndPopup) gameEndPopup.style.display = 'none';
-            gameEndNavActive = false; 
-            this.classList.remove('game-end-button-active'); 
-            resetGame(); 
-        });
-    }
+
 }
 
 function gameLoop() {
