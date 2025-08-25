@@ -1,3 +1,5 @@
+// questionsData is provided globally by questions.js
+
 // 1. Canvas and Context
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -25,10 +27,9 @@ const PADDLE_COLORS = ["#0095DD", "#DD0095", "#95DD00", "#DD9500"]; // Some padd
 let score = 0;
 const scoreDisplay = document.getElementById('scoreDisplay');
 
-// AudioContext and Sound Buffers
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const gameSounds = {}; 
-let soundsLoadedCount = 0; 
+// Sound Buffers
+const gameSounds = {};
+let soundsLoadedCount = 0;
 const soundFiles = {
     'brick_hit': 'assets/sounds/brick_hit.wav',
     'paddle_hit': 'assets/sounds/paddle_hit.wav',
@@ -36,7 +37,6 @@ const soundFiles = {
     'game_over': 'assets/sounds/game_over.wav'
 };
 const totalSoundsToLoad = Object.keys(soundFiles).length;
-let allSoundsPreDecoded = false; 
 
 // Quiz Statistics
 let questionsAnsweredCorrectly = 0;
@@ -85,26 +85,6 @@ function shuffleArray(array) {
     }
 }
 
-async function tryDecodeAllSounds() {
-    const decodePromises = [];
-    for (const soundName in gameSounds) {
-        const soundData = gameSounds[soundName];
-        if (soundData instanceof ArrayBuffer) {
-            const decodePromise = audioCtx.decodeAudioData(soundData.slice(0)) 
-                .then(decodedBuffer => { gameSounds[soundName] = decodedBuffer; })
-                .catch(error => { console.error(`Error pre-decoding ${soundName}: `, error); });
-            decodePromises.push(decodePromise);
-        }
-    }
-    try { 
-        await Promise.all(decodePromises); 
-        allSoundsPreDecoded = true; // Set only after successful completion
-    } 
-    catch (error) { 
-        console.error('An error occurred during the Promise.all of pre-decoding sounds:', error); 
-    }
-}
-
 function updateScoreDisplay() {
     scoreDisplay.textContent = `Punktestand: ${score}`;
 }
@@ -116,67 +96,37 @@ let backgroundLoaded = false;
 backgroundImage.onload = () => { backgroundLoaded = true; };
 backgroundImage.onerror = () => { console.error('Error loading background image.'); };
 
-async function loadSound(name, filePath) {
-    try {
-        const response = await fetch(filePath);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, file: ${filePath}`);
-        const arrayBuffer = await response.arrayBuffer();
-        gameSounds[name] = arrayBuffer; 
-        soundsLoadedCount++; 
-    } catch (fetchError) { console.error(`Error fetching ArrayBuffer for ${name} from ${filePath}:`, fetchError); }
+function loadSound(name, filePath) {
+    return new Promise((resolve) => {
+        const audio = new Audio(filePath);
+        audio.addEventListener('canplaythrough', () => {
+            gameSounds[name] = audio;
+            soundsLoadedCount++;
+            resolve();
+        }, { once: true });
+        audio.addEventListener('error', (e) => {
+            console.error(`Error loading sound ${name} from ${filePath}:`, e);
+            resolve();
+        }, { once: true });
+        audio.load();
+    });
 }
 
 async function loadAllSounds() {
     const soundPromises = Object.keys(soundFiles).map(name => loadSound(name, soundFiles[name]));
-    try { await Promise.all(soundPromises); } 
+    try { await Promise.all(soundPromises); }
     catch (error) { console.error('Error loading one or more sounds (Promise.all rejected):', error); }
 }
 
-function playSound(soundName) { 
-    if (!audioCtx) return;
-
-    const playLogic = () => {
-        const soundData = gameSounds[soundName];
-        if (!soundData) return;
-
-        if (soundData instanceof ArrayBuffer) { 
-            console.warn(`Sound ${soundName} is still ArrayBuffer, decoding on-the-fly.`);
-            audioCtx.decodeAudioData(soundData.slice(0), (decodedBuffer) => {
-                gameSounds[soundName] = decodedBuffer; 
-                const source = audioCtx.createBufferSource();
-                source.buffer = decodedBuffer;
-                source.connect(audioCtx.destination);
-                source.start(0);
-            }, (error) => { console.error(`Error decoding ${soundName}: `, error); });
-        } else if (soundData instanceof AudioBuffer) {
-            const source = audioCtx.createBufferSource();
-            source.buffer = soundData;
-            source.connect(audioCtx.destination);
-            source.start(0);
-        }
-    };
-
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume().then(() => {
-            if (audioCtx.state === 'running') {
-                playLogic();
-            } else {
-                console.error('AudioContext could not be resumed.');
-            }
-        }).catch(e => console.error('Error resuming AudioContext during playSound:', e));
-    } else if (audioCtx.state === 'running') {
-        playLogic();
-    }
+function playSound(soundName) {
+    const baseSound = gameSounds[soundName];
+    if (!baseSound) return;
+    const sound = baseSound.cloneNode();
+    sound.play().catch(e => console.error(`Error playing sound ${soundName}:`, e));
 }
 
-let quizQuestions = [];
-async function loadQuestions() {
-    try {
-        const response = await fetch('questions.json');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        quizQuestions = await response.json();
-    } catch (error) { console.error('Error loading questions:', error); }
-}
+let quizQuestions = window.questionsData || [];
+function loadQuestions() { quizQuestions = window.questionsData || []; }
 
 // 3. Game Entities (Paddle, Ball, Brick classes remain unchanged)
 class Paddle { 
@@ -210,38 +160,36 @@ class Ball {
         }
         for (let i = 0; i < bricks.length; i++) {
             const brick = bricks[i];
-            if (brick.visible) {
-                const closestX = Math.max(brick.x, Math.min(this.x, brick.x + brick.width));
-                const closestY = Math.max(brick.y, Math.min(this.y, brick.y + brick.height));
-                const dX = this.x - closestX; const dY = this.y - closestY;
-                if ((dX * dX + dY * dY) < (this.radius * this.radius)) {
-                    brick.visible = false; score += 10; updateScoreDisplay(); playSound('brick_hit'); brickHitCount++;
-                    const oX = this.radius - Math.abs(dX); const oY = this.radius - Math.abs(dY);
-                    if (oX + 0.1 < oY) { this.dx *= -1; this.x += this.dx > 0 ? oX : -oX; } 
-                    else if (oY + 0.1 < oX) { this.dy *= -1; this.y += this.dy > 0 ? oY : -oY; } 
-                    else { this.dx *= -1; this.dy *= -1; this.x += this.dx > 0 ? oX : -oX; this.y += this.dy > 0 ? oY : -oY; }
-                    if (brick.isQuestionBrick) { brick.isQuestionBrick = false; quizActive = true; startQuiz(); }
-                    break; 
-                }
+            const closestX = Math.max(brick.x, Math.min(this.x, brick.x + brick.width));
+            const closestY = Math.max(brick.y, Math.min(this.y, brick.y + brick.height));
+            const dX = this.x - closestX; const dY = this.y - closestY;
+            if ((dX * dX + dY * dY) < (this.radius * this.radius)) {
+                // remove brick from active list to reduce future iterations
+                bricks.splice(i, 1);
+                score += 10; updateScoreDisplay(); playSound('brick_hit'); brickHitCount++;
+                const oX = this.radius - Math.abs(dX); const oY = this.radius - Math.abs(dY);
+                if (oX + 0.1 < oY) { this.dx *= -1; this.x += this.dx > 0 ? oX : -oX; }
+                else if (oY + 0.1 < oX) { this.dy *= -1; this.y += this.dy > 0 ? oY : -oY; }
+                else { this.dx *= -1; this.dy *= -1; this.x += this.dx > 0 ? oX : -oX; this.y += this.dy > 0 ? oY : -oY; }
+                if (brick.isQuestionBrick) { quizActive = true; startQuiz(); }
+                break;
             }
         }
     }
 }
-class Brick { 
+class Brick {
     constructor(x, y, width, height, color) {
         this.x = x; this.y = y; this.width = width; this.height = height;
-        this.color = color; this.visible = true; this.isQuestionBrick = false; 
+        this.color = color; this.isQuestionBrick = false;
     }
     draw(ctx) {
-        if (this.visible) {
-            ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.width, this.height);
-            if (this.isQuestionBrick) {
-                const qT = "?"; const x = this.x + this.width / 2; const y = this.y + this.height / 2;
-                ctx.font = "bold 16px Consolas"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillStyle = "rgba(220,220,220,0.7)"; const o = 1; 
-                ctx.fillText(qT, x-o, y-o); ctx.fillText(qT, x+o, y-o); ctx.fillText(qT, x-o, y+o); ctx.fillText(qT, x+o, y+o);
-                ctx.fillStyle = "black"; ctx.fillText(qT, x, y);
-            }
+        ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.width, this.height);
+        if (this.isQuestionBrick) {
+            const qT = "?"; const x = this.x + this.width / 2; const y = this.y + this.height / 2;
+            ctx.font = "bold 16px Consolas"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillStyle = "rgba(220,220,220,0.7)"; const o = 1;
+            ctx.fillText(qT, x-o, y-o); ctx.fillText(qT, x+o, y-o); ctx.fillText(qT, x-o, y+o); ctx.fillText(qT, x+o, y+o);
+            ctx.fillStyle = "black"; ctx.fillText(qT, x, y);
         }
     }
 }
@@ -271,7 +219,10 @@ function drawGame() {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     if (backgroundLoaded) ctx.drawImage(backgroundImage, 0, 0, canvasWidth, canvasHeight);
     else { ctx.fillStyle = '#f0f0f0'; ctx.fillRect(0, 0, canvasWidth, canvasHeight); }
-    paddle.draw(ctx); ball.draw(ctx); bricks.forEach(brick => brick.draw(ctx));
+    paddle.draw(ctx); ball.draw(ctx);
+    for (let i = 0; i < bricks.length; i++) {
+        bricks[i].draw(ctx);
+    }
 }
 
 // Update game state (update remains unchanged)
@@ -408,9 +359,9 @@ function resetGame() {
     }
 }
 
-function checkWinCondition() { 
-    if (!bricks || bricks.length === 0) return; 
-    if (bricks.every(brick => !brick.visible) && !quizActive) showGameEndPopup();
+function checkWinCondition() {
+    if (!bricks) return;
+    if (bricks.length === 0 && !quizActive) showGameEndPopup();
 }
 
 function showGameEndPopup() { 
@@ -445,36 +396,7 @@ async function initializeGame() {
     await Promise.all([loadQuestions(), loadAllSounds()]);
     if (loadingScreen) loadingScreen.style.display = 'none';
 
-    // Define an async function for audio setup
-    const setupAudioAsync = async () => {
-        try {
-            if (audioCtx.state === 'suspended') {
-                console.log("AudioContext suspended, attempting to resume...");
-                await audioCtx.resume();
-            }
-
-            if (audioCtx.state === 'running') {
-                console.log("AudioContext running, attempting to pre-decode sounds...");
-                if (!allSoundsPreDecoded) { // Check flag before attempting
-                    await tryDecodeAllSounds();
-                    console.log("tryDecodeAllSounds completed.");
-                } else {
-                    console.log("Sounds already pre-decoded.");
-                }
-            } else {
-                console.warn("AudioContext not running after initial resume attempt during setupAudioAsync. Sound might be delayed until first user interaction via playSound.");
-            }
-        } catch (e) {
-            console.error("Error during setupAudioAsync: ", e);
-        }
-    };
-
-    // Call the audio setup function but don't await it in the main flow
-    setupAudioAsync().catch(e => console.error("Error from setupAudioAsync promise: ", e));
-
-    // These must run immediately after starting the audio setup,
-    // regardless of its completion.
-    resetGame(); 
+    resetGame();
     gameLoop();
     console.log("Game start initiated automatically after loading.");
 
@@ -573,9 +495,13 @@ if (gameContainer) gameContainer.style.display = 'none'; // Spiel-Canvas ausblen
 
 // Nur laden, nicht starten
 async function preloadGameAssets() {
-    await Promise.all([loadQuestions(), loadAllSounds()]);
-    if (loadingScreen) loadingScreen.style.display = 'none';
-    if (startButton) startButton.disabled = false; // Button aktivieren!
+    loadQuestions();
+    try {
+        await loadAllSounds();
+    } finally {
+        if (loadingScreen) loadingScreen.style.display = 'none';
+        if (startButton) startButton.disabled = false; // Button aktivieren!
+    }
 }
 preloadGameAssets();
 
