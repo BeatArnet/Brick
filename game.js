@@ -1,5 +1,89 @@
 // questionsData is provided globally by questions.js
 
+// --- UI TEXT DEFINITIONS ---------------------------------------------------
+const UI_TEXTS = {
+    de: {
+        startTitle: 'Willkommen zum Breakout Arzttarif!',
+        startSubtitle: 'Zerstöre Steine und beantworte Quizfragen, um Punkte zu sammeln.',
+        startButton: 'Spiel und Quiz beginnen',
+        loading: 'Spiel und Quiz wird aufgestartet',
+        scoreLabel: 'Punktestand',
+        quizFeedbackCorrect: '+100 Punkte',
+        quizFeedbackIncorrect: '-20 Punkte',
+        gameEndTitle: 'Spielende',
+        gameEndScore: (score) => `Endpunktestand: ${score}`,
+        gameEndCorrect: (count) => `Richtige Antworten: ${count}`,
+        gameEndIncorrect: (count) => `Falsche Antworten: ${count}`,
+        gameEndReplay: 'Nochmal spielen',
+        gameEndAlert: (score, correct, total) =>
+            `Spielende!\nEndpunktestand: ${score}\nFragen: ${correct} richtig / ${total} insgesamt`
+    },
+    fr: {
+        startTitle: 'Bienvenue dans Breakout Tarif médical !',
+        startSubtitle: 'Détruisez des briques et répondez au quiz pour marquer des points.',
+        startButton: 'Commencer le jeu et le quiz',
+        loading: 'Chargement du jeu et du quiz',
+        scoreLabel: 'Score',
+        quizFeedbackCorrect: '+100 points',
+        quizFeedbackIncorrect: '-20 points',
+        gameEndTitle: 'Fin de la partie',
+        gameEndScore: (score) => `Score final : ${score}`,
+        gameEndCorrect: (count) => `Réponses correctes : ${count}`,
+        gameEndIncorrect: (count) => `Réponses incorrectes : ${count}`,
+        gameEndReplay: 'Rejouer',
+        gameEndAlert: (score, correct, total) =>
+            `Fin de la partie !\nScore final : ${score}\nQuestions : ${correct} bonnes / ${total} au total`
+    },
+    it: {
+        startTitle: 'Benvenuto a Breakout Tariffa medica!',
+        startSubtitle: 'Distruggi mattoni e rispondi al quiz per guadagnare punti.',
+        startButton: 'Avvia gioco e quiz',
+        loading: 'Caricamento di gioco e quiz',
+        scoreLabel: 'Punteggio',
+        quizFeedbackCorrect: '+100 punti',
+        quizFeedbackIncorrect: '-20 punti',
+        gameEndTitle: 'Fine partita',
+        gameEndScore: (score) => `Punteggio finale: ${score}`,
+        gameEndCorrect: (count) => `Risposte corrette: ${count}`,
+        gameEndIncorrect: (count) => `Risposte errate: ${count}`,
+        gameEndReplay: 'Gioca di nuovo',
+        gameEndAlert: (score, correct, total) =>
+            `Fine partita!\nPunteggio finale: ${score}\nDomande: ${correct} corrette / ${total} totali`
+    }
+};
+
+let currentLanguage = 'de';
+
+function getUIText(key, ...args) {
+    const languagePack = UI_TEXTS[currentLanguage] || UI_TEXTS.de;
+    const fallbackPack = UI_TEXTS.de;
+    const value = languagePack[key] ?? fallbackPack[key];
+    if (typeof value === 'function') return value(...args);
+    return value;
+}
+
+function applyLanguageToUI() {
+    if (startScreenTitleEl) startScreenTitleEl.textContent = getUIText('startTitle');
+    if (startScreenSubtitleEl) startScreenSubtitleEl.textContent = getUIText('startSubtitle');
+    if (startButton) startButton.textContent = getUIText('startButton');
+    if (loadingScreen) loadingScreen.textContent = getUIText('loading');
+    updateScoreDisplay();
+
+    if (gameEndTitleEl) gameEndTitleEl.textContent = getUIText('gameEndTitle');
+    if (gameEndScoreEl) gameEndScoreEl.textContent = getUIText('gameEndScore', 0);
+    if (gameEndCorrectEl) gameEndCorrectEl.textContent = getUIText('gameEndCorrect', 0);
+    if (gameEndIncorrectEl) gameEndIncorrectEl.textContent = getUIText('gameEndIncorrect', 0);
+    if (gameEndPlayAgainButton) gameEndPlayAgainButton.textContent = getUIText('gameEndReplay');
+}
+
+function setGameLanguage(languageCode) {
+    if (!UI_TEXTS[languageCode]) return;
+    currentLanguage = languageCode;
+    applyLanguageToUI();
+}
+
+window.setGameLanguage = setGameLanguage;
+
 // 1. Canvas and Context
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -24,9 +108,34 @@ const BRICK_START_Y = 50;
 const BRICK_COLORS = ["#FF0000", "#FFA500", "#FFFF00", "#00FF00", "#0000FF"]; // Red, Orange, Yellow, Green, Blue
 const PADDLE_COLORS = ["#0095DD", "#DD0095", "#95DD00", "#DD9500"]; // Some paddle colors for the optional feature
 
+const POWER_UP_DROP_RATE = 0.25;
+const POWER_UP_CONFIG = {
+    slow: { color: '#6ec1ff', label: 'S' },
+    laser: { color: '#ff6b6b', label: 'L' },
+    sticky: { color: '#ffd166', label: 'ST' },
+    expand: { color: '#7bd389', label: '+' }
+};
+const POWER_UP_FALL_SPEED = 2.4;
+const LASER_SPEED = 10;
+const LASER_COOLDOWN_MS = 350;
+
 // Score
 let score = 0;
 const scoreDisplay = document.getElementById('scoreDisplay');
+
+// DOM Elements required for translations and interactions
+const startScreenTitleEl = document.getElementById('startScreenTextLine1');
+const startScreenSubtitleEl = document.getElementById('startScreenTextLine2');
+const startScreen = document.getElementById('startScreen');
+const startButton = document.getElementById('startButton');
+const loadingScreen = document.getElementById('loadingScreen');
+const gameContainer = document.getElementById('gameContainer');
+const gameEndPopup = document.getElementById('gameEndPopup');
+const gameEndTitleEl = document.getElementById('gameEndTitle');
+const gameEndScoreEl = document.getElementById('gameEndScore');
+const gameEndCorrectEl = document.getElementById('gameEndCorrect');
+const gameEndIncorrectEl = document.getElementById('gameEndIncorrect');
+const gameEndPlayAgainButton = document.getElementById('gameEndPlayAgainButton');
 
 // Sound Buffers
 const gameSounds = {};
@@ -50,13 +159,28 @@ let gameIsOver = false;
 let quizActive = false;
 let currentQuestion = null;
 let questionBrickTarget = 0;
-let brickHitCount = 0; 
+let brickHitCount = 0;
+let createdBrickCount = 0;
 let ballSpeedBoostActive = false;
 let boostStartTime = 0;
 let originalBallSpeedX = 0;
 let originalBallSpeedY = 0;
-let usedQuestionIndices = []; 
-let shuffledQuizQueue = []; 
+let usedQuestionIndices = [];
+let shuffledQuizQueue = [];
+
+let fallingPowerUps = [];
+let activeLasers = [];
+let slowEffectActive = false;
+let slowEffectEndTime = 0;
+let ballSpeedMultiplier = 1;
+let laserActive = false;
+let laserEffectEndTime = 0;
+let lastLaserShotTime = 0;
+let stickyActive = false;
+let stickyEffectEndTime = 0;
+let ballStuckToPaddle = false;
+let expandActive = false;
+let expandEffectEndTime = 0;
 
 // Keyboard Navigation States
 let selectedAnswerIndex = -1; 
@@ -69,23 +193,15 @@ const quizTitle = document.getElementById('quizTitle');
 const quizQuestionEl = document.getElementById('quizQuestion');
 const quizAnswersEl = document.getElementById('quizAnswers');
 const quizFeedback = document.getElementById('quizFeedback');
-let gameEndPlayAgainButton;
 
-document.addEventListener('DOMContentLoaded', () => {
-    gameEndPlayAgainButton = document.getElementById('gameEndPlayAgainButton');
-    if (gameEndPlayAgainButton) {
-        gameEndPlayAgainButton.addEventListener('click', () => {
-            const gameEndPopup = document.getElementById('gameEndPopup');
-            if (gameEndPopup) gameEndPopup.style.display = 'none';
-            gameEndNavActive = false;
-            gameEndPlayAgainButton.classList.remove('game-end-button-active');
-            resetGame();
-        });
-    }
-});
-
-const loadingScreen = document.getElementById('loadingScreen');
-const gameContainer = document.getElementById('gameContainer');
+if (gameEndPlayAgainButton) {
+    gameEndPlayAgainButton.addEventListener('click', () => {
+        if (gameEndPopup) gameEndPopup.style.display = 'none';
+        gameEndNavActive = false;
+        gameEndPlayAgainButton.classList.remove('game-end-button-active');
+        resetGame();
+    });
+}
 // const startPrompt = document.getElementById('startPrompt'); // This line was removed in the previous step
 
 // Keyboard control flags (for paddle)
@@ -127,7 +243,8 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 }
 
 function updateScoreDisplay() {
-    scoreDisplay.textContent = `Punktestand: ${score}`;
+    if (!scoreDisplay) return;
+    scoreDisplay.textContent = `${getUIText('scoreLabel')}: ${score}`;
 }
 
 // 2. Asset Loading
@@ -189,6 +306,8 @@ class Ball {
         this.radius = BALL_RADIUS; this.x = canvasWidth / 2; this.y = canvasHeight / 2;
         this.color = 'red'; this.dx = 4;  this.dy = -4;
         this.trail = [];
+        this.stickyReleaseDX = 4;
+        this.stickyReleaseDY = -4;
     }
     draw(ctx) {
         ctx.save();
@@ -210,14 +329,37 @@ class Ball {
         ctx.closePath();
     }
     update() {
-        this.x += this.dx; this.y += this.dy;
+        if (ballStuckToPaddle) {
+            this.x = paddle.x + paddle.width / 2;
+            this.y = paddle.y - this.radius;
+            this.trail = [];
+            return;
+        }
+
+        this.x += this.dx * ballSpeedMultiplier;
+        this.y += this.dy * ballSpeedMultiplier;
         if (this.x + this.radius > canvasWidth || this.x - this.radius < 0) { this.dx *= -1; playSound('wall_hit'); }
         if (this.y - this.radius < 0) { this.dy *= -1; playSound('wall_hit'); }
         if (this.y + this.radius > canvasHeight) { playSound('game_over'); showGameEndPopup(); return; }
         if (this.dy > 0 && this.x + this.radius > paddle.x && this.x - this.radius < paddle.x + paddle.width &&
             this.y + this.radius > paddle.y && this.y - this.radius < paddle.y + paddle.height) {
-            this.dy *= -1; this.y = paddle.y - this.radius;
-            this.dx = ((this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2)) * maxBallSpeedX;
+            const centerRatio = ((this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2));
+            const newDx = centerRatio * maxBallSpeedX;
+            const newDy = -Math.abs(this.dy || 4);
+
+            if (stickyActive) {
+                this.stickyReleaseDX = newDx || (Math.random() > 0.5 ? 4 : -4);
+                this.stickyReleaseDY = newDy || -4;
+                ballStuckToPaddle = true;
+                this.dx = this.stickyReleaseDX;
+                this.dy = this.stickyReleaseDY;
+                this.y = paddle.y - this.radius;
+            } else {
+                this.dy = newDy;
+                this.y = paddle.y - this.radius;
+                this.dx = newDx;
+            }
+
             playSound('paddle_hit'); paddle.changeColor();
         }
         for (let i = 0; i < bricks.length; i++) {
@@ -226,21 +368,12 @@ class Ball {
             const closestY = Math.max(brick.y, Math.min(this.y, brick.y + brick.height));
             const dX = this.x - closestX; const dY = this.y - closestY;
             if ((dX * dX + dY * dY) < (this.radius * this.radius)) {
-                // remove brick from active list to reduce future iterations
-                bricks.splice(i, 1);
-                score += 10; updateScoreDisplay(); playSound('brick_hit'); brickHitCount++;
-                if (brickHitCount % 10 === 0) {
-                    this.dx *= 1.1;
-                    this.dy *= 1.1;
-                    this.dx = Math.max(-12, Math.min(12, this.dx));
-                    this.dy = Math.max(-12, Math.min(12, this.dy));
-                    maxBallSpeedX *= 1.1;
-                }
                 const oX = this.radius - Math.abs(dX); const oY = this.radius - Math.abs(dY);
                 if (oX + 0.1 < oY) { this.dx *= -1; this.x += this.dx > 0 ? oX : -oX; }
                 else if (oY + 0.1 < oX) { this.dy *= -1; this.y += this.dy > 0 ? oY : -oY; }
                 else { this.dx *= -1; this.dy *= -1; this.x += this.dx > 0 ? oX : -oX; this.y += this.dy > 0 ? oY : -oY; }
-                if (brick.isQuestionBrick) { quizActive = true; startQuiz(); }
+
+                handleBrickDestruction(i, brick, 'ball', this);
                 break;
             }
         }
@@ -273,6 +406,227 @@ class Brick {
         }
     }
 }
+
+function getRandomPowerUpType() {
+    const keys = Object.keys(POWER_UP_CONFIG);
+    return keys[Math.floor(Math.random() * keys.length)];
+}
+
+function maybeDropPowerUp(brick) {
+    if (Math.random() > POWER_UP_DROP_RATE) return;
+    const type = getRandomPowerUpType();
+    fallingPowerUps.push(new PowerUp(brick.x + brick.width / 2, brick.y + brick.height / 2, type));
+}
+
+function handleBrickDestruction(index, brick, cause, ballInstance = null) {
+    bricks.splice(index, 1);
+    score += 10;
+    updateScoreDisplay();
+    playSound('brick_hit');
+    brickHitCount++;
+
+    if (cause === 'ball' && ballInstance) {
+        if (brickHitCount % 10 === 0) {
+            ballInstance.dx *= 1.1;
+            ballInstance.dy *= 1.1;
+            ballInstance.dx = Math.max(-12, Math.min(12, ballInstance.dx));
+            ballInstance.dy = Math.max(-12, Math.min(12, ballInstance.dy));
+            maxBallSpeedX *= 1.1;
+        }
+    }
+
+    maybeDropPowerUp(brick);
+
+    if (brick.isQuestionBrick) {
+        quizActive = true;
+        startQuiz();
+    }
+}
+
+class PowerUp {
+    constructor(centerX, centerY, type) {
+        this.type = type;
+        this.width = 28;
+        this.height = 28;
+        this.x = centerX - this.width / 2;
+        this.y = centerY - this.height / 2;
+        this.speed = POWER_UP_FALL_SPEED;
+    }
+    update() {
+        this.y += this.speed;
+    }
+    draw(ctx) {
+        const config = POWER_UP_CONFIG[this.type] || { color: '#ffffff', label: '?' };
+        ctx.fillStyle = config.color;
+        drawRoundedRect(ctx, this.x, this.y, this.width, this.height, 6);
+        ctx.fill();
+        ctx.strokeStyle = '#00000055';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#1d1d1d';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(config.label || '?', this.x + this.width / 2, this.y + this.height / 2);
+    }
+}
+
+class LaserShot {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 4;
+        this.height = 22;
+        this.speed = LASER_SPEED;
+    }
+    get left() { return this.x - this.width / 2; }
+    get right() { return this.x + this.width / 2; }
+    get top() { return this.y - this.height; }
+    get bottom() { return this.y; }
+    update() {
+        this.y -= this.speed;
+    }
+    draw(ctx) {
+        ctx.fillStyle = '#ff4d4d';
+        ctx.fillRect(this.left, this.top, this.width, this.height);
+    }
+}
+
+function activatePowerUp(type) {
+    const now = Date.now();
+    switch (type) {
+        case 'slow':
+            slowEffectActive = true;
+            slowEffectEndTime = now + 8000;
+            ballSpeedMultiplier = 0.6;
+            break;
+        case 'laser':
+            laserActive = true;
+            laserEffectEndTime = now + 10000;
+            lastLaserShotTime = 0;
+            break;
+        case 'sticky':
+            stickyActive = true;
+            stickyEffectEndTime = now + 12000;
+            break;
+        case 'expand':
+            expandActive = true;
+            expandEffectEndTime = now + 12000;
+            paddle.width = Math.min(canvasWidth * 0.75, PADDLE_WIDTH * 1.6);
+            if (paddle.x + paddle.width > canvasWidth) paddle.x = canvasWidth - paddle.width;
+            if (paddle.x < 0) paddle.x = 0;
+            break;
+        default:
+            break;
+    }
+}
+
+function updatePowerUps() {
+    for (let i = fallingPowerUps.length - 1; i >= 0; i--) {
+        const powerUp = fallingPowerUps[i];
+        powerUp.update();
+        if (powerUp.y > canvasHeight) {
+            fallingPowerUps.splice(i, 1);
+            continue;
+        }
+
+        if (
+            !quizActive && !gameIsOver &&
+            powerUp.x < paddle.x + paddle.width &&
+            powerUp.x + powerUp.width > paddle.x &&
+            powerUp.y < paddle.y + paddle.height &&
+            powerUp.y + powerUp.height > paddle.y
+        ) {
+            activatePowerUp(powerUp.type);
+            fallingPowerUps.splice(i, 1);
+        }
+    }
+}
+
+function drawPowerUps(ctx) {
+    for (let i = 0; i < fallingPowerUps.length; i++) {
+        fallingPowerUps[i].draw(ctx);
+    }
+}
+
+function updateLasers() {
+    for (let i = activeLasers.length - 1; i >= 0; i--) {
+        const laser = activeLasers[i];
+        laser.update();
+
+        if (laser.bottom < 0) {
+            activeLasers.splice(i, 1);
+            continue;
+        }
+
+        for (let j = bricks.length - 1; j >= 0; j--) {
+            const brick = bricks[j];
+            if (
+                laser.right > brick.x &&
+                laser.left < brick.x + brick.width &&
+                laser.bottom > brick.y &&
+                laser.top < brick.y + brick.height
+            ) {
+                handleBrickDestruction(j, brick, 'laser');
+                activeLasers.splice(i, 1);
+                break;
+            }
+        }
+    }
+}
+
+function drawLasers(ctx) {
+    for (let i = 0; i < activeLasers.length; i++) {
+        activeLasers[i].draw(ctx);
+    }
+}
+
+function shootLasers() {
+    if (!laserActive) return;
+    const now = Date.now();
+    if (now - lastLaserShotTime < LASER_COOLDOWN_MS) return;
+    lastLaserShotTime = now;
+
+    const leftX = paddle.x + paddle.width * 0.25;
+    const rightX = paddle.x + paddle.width * 0.75;
+    const y = paddle.y;
+
+    activeLasers.push(new LaserShot(leftX, y));
+    activeLasers.push(new LaserShot(rightX, y));
+    playSound('paddle_hit');
+}
+
+function refreshActivePowerUpEffects() {
+    const now = Date.now();
+    if (slowEffectActive && now > slowEffectEndTime) {
+        slowEffectActive = false;
+        ballSpeedMultiplier = 1;
+    }
+    if (laserActive && now > laserEffectEndTime) {
+        laserActive = false;
+    }
+    if (stickyActive && now > stickyEffectEndTime) {
+        stickyActive = false;
+        if (ballStuckToPaddle) releaseBallFromPaddle();
+    }
+    if (expandActive && now > expandEffectEndTime) {
+        expandActive = false;
+        paddle.width = PADDLE_WIDTH;
+        if (paddle.x + paddle.width > canvasWidth) paddle.x = canvasWidth - paddle.width;
+        if (paddle.x < 0) paddle.x = 0;
+    }
+}
+
+function releaseBallFromPaddle() {
+    if (!ballStuckToPaddle) return;
+    ballStuckToPaddle = false;
+    ball.dx = ball.stickyReleaseDX || (Math.random() > 0.5 ? 4 : -4);
+    ball.dy = ball.stickyReleaseDY || -4;
+    if (ball.dy > 0) ball.dy = -Math.abs(ball.dy);
+    if (Math.abs(ball.dy) < 1) ball.dy = -4;
+    if (Math.abs(ball.dx) < 0.3) ball.dx = ball.dx < 0 ? -4 : 4;
+    ball.trail = [];
+}
 let bricks = [];
 function initializeBricks() { 
     bricks = []; createdBrickCount = 0; 
@@ -295,24 +649,29 @@ function initializeBricks() {
 }
 
 // 4. Rendering Function (drawGame remains unchanged)
-function drawGame() { 
+function drawGame() {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     if (backgroundLoaded) ctx.drawImage(backgroundImage, 0, 0, canvasWidth, canvasHeight);
     else { ctx.fillStyle = '#f0f0f0'; ctx.fillRect(0, 0, canvasWidth, canvasHeight); }
-    paddle.draw(ctx); ball.draw(ctx);
     for (let i = 0; i < bricks.length; i++) {
         bricks[i].draw(ctx);
     }
+    drawPowerUps(ctx);
+    paddle.draw(ctx);
+    ball.draw(ctx);
+    drawLasers(ctx);
 }
 
 // Update game state (update remains unchanged)
-function update() { 
-    if (gameIsOver || quizActive) return; 
+function update() {
+    refreshActivePowerUpEffects();
+
+    if (gameIsOver || quizActive) return;
     if (ballSpeedBoostActive && Date.now() - boostStartTime >= 10000) {
         ball.dx = originalBallSpeedX; ball.dy = originalBallSpeedY;
         ballSpeedBoostActive = false;
-    } 
-    
+    }
+
     if (arrowLeftPressed) {
         paddle.x -= PADDLE_SPEED;
     }
@@ -322,8 +681,11 @@ function update() {
 
     if (paddle.x < 0) paddle.x = 0;
     if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
-    
-    ball.update(); checkWinCondition(); 
+
+    ball.update();
+    updatePowerUps();
+    updateLasers();
+    checkWinCondition();
 }
 
 // Quiz Functions (getNewQuizQuestion, updateQuizAnswerSelectionVisuals, startQuiz, handleAnswer, endQuiz remain unchanged)
@@ -383,11 +745,11 @@ function handleAnswer(selectedIndexParam) {
     }
     questionsAnsweredTotal++;
     if (actualSelectedIndex === currentQuestion.correct_answer_index) {
-        questionsAnsweredCorrectly++; score += 100; 
-        quizFeedback.textContent = "+100 Punkte"; quizFeedback.style.color = "green";
+        questionsAnsweredCorrectly++; score += 100;
+        quizFeedback.textContent = getUIText('quizFeedbackCorrect'); quizFeedback.style.color = "green";
     } else {
-        score -= 20; score = Math.max(0, score); 
-        quizFeedback.textContent = "-20 Punkte"; quizFeedback.style.color = "red";
+        score -= 20; score = Math.max(0, score);
+        quizFeedback.textContent = getUIText('quizFeedbackIncorrect'); quizFeedback.style.color = "red";
         if (!ballSpeedBoostActive) {
             ballSpeedBoostActive = true; originalBallSpeedX = ball.dx; originalBallSpeedY = ball.dy;
             ball.dx *= 1.5; ball.dy *= 1.5;
@@ -419,9 +781,11 @@ function endQuiz() {
 function resetGame() {
     score = 0; updateScoreDisplay(); initializeBricks();
     paddle.x = (canvasWidth - PADDLE_WIDTH) / 2; paddle.y = canvasHeight - PADDLE_HEIGHT - 10;
+    paddle.width = PADDLE_WIDTH;
     paddle.color = PADDLE_COLORS[0];
     ball.x = canvasWidth / 2; ball.y = canvasHeight / 2;
     ball.dx = 4; ball.dy = -4; ball.trail = [];
+    ball.stickyReleaseDX = 4; ball.stickyReleaseDY = -4;
     quizActive = false; gameIsOver = false;
     if (ballSpeedBoostActive) { ball.dx = originalBallSpeedX; ball.dy = originalBallSpeedY; ballSpeedBoostActive = false; }
     brickHitCount = 0; questionsAnsweredCorrectly = 0; questionsAnsweredTotal = 0; maxBallSpeedX = 6;
@@ -430,11 +794,18 @@ function resetGame() {
         shuffledQuizQueue = quizQuestions.map((_, i) => i); shuffleArray(shuffledQuizQueue);
         shuffledQuizQueue = shuffledQuizQueue.map(i => quizQuestions[i]);
     }
-    usedQuestionIndices = []; 
-    
-    quizNavActive = false; selectedAnswerIndex = -1; 
-    gameEndNavActive = false; 
-    if (gameEndPlayAgainButton) { 
+    usedQuestionIndices = [];
+
+    fallingPowerUps = [];
+    activeLasers = [];
+    slowEffectActive = false; slowEffectEndTime = 0; ballSpeedMultiplier = 1;
+    laserActive = false; laserEffectEndTime = 0; lastLaserShotTime = 0;
+    stickyActive = false; stickyEffectEndTime = 0; ballStuckToPaddle = false;
+    expandActive = false; expandEffectEndTime = 0;
+
+    quizNavActive = false; selectedAnswerIndex = -1;
+    gameEndNavActive = false;
+    if (gameEndPlayAgainButton) {
         gameEndPlayAgainButton.classList.remove('game-end-button-active');
     }
 }
@@ -444,27 +815,25 @@ function checkWinCondition() {
     if (bricks.length === 0 && !quizActive) showGameEndPopup();
 }
 
-function showGameEndPopup() { 
-    gameIsOver = true; 
-    gameEndNavActive = true; 
+function showGameEndPopup() {
+    gameIsOver = true;
+    gameEndNavActive = true;
     if (gameEndPlayAgainButton) {
         gameEndPlayAgainButton.classList.add('game-end-button-active');
     }
 
-    const gameEndPopup = document.getElementById('gameEndPopup');
-    const gameEndTitle = document.getElementById('gameEndTitle');
-    const gameEndScore = document.getElementById('gameEndScore');
-    const gameEndCorrect = document.getElementById('gameEndCorrect');
-    const gameEndIncorrect = document.getElementById('gameEndIncorrect');
-    if (!gameEndPopup || !gameEndTitle || !gameEndScore || !gameEndCorrect || !gameEndIncorrect) {
-        alert(`Spielende!\nEndpunktestand: ${score}\nFragen: ${questionsAnsweredCorrectly} richtig / ${questionsAnsweredTotal} insgesamt`);
+    fallingPowerUps = [];
+    activeLasers = [];
+
+    if (!gameEndPopup || !gameEndTitleEl || !gameEndScoreEl || !gameEndCorrectEl || !gameEndIncorrectEl) {
+        alert(getUIText('gameEndAlert', score, questionsAnsweredCorrectly, questionsAnsweredTotal));
         return;
     }
     const incorrectAnswers = questionsAnsweredTotal - questionsAnsweredCorrectly;
-    gameEndTitle.textContent = "Spielende"; 
-    gameEndScore.textContent = `Endpunktestand: ${score}`;
-    gameEndCorrect.textContent = `Richtige Antworten: ${questionsAnsweredCorrectly}`;
-    gameEndIncorrect.textContent = `Falsche Antworten: ${incorrectAnswers}`;
+    gameEndTitleEl.textContent = getUIText('gameEndTitle');
+    gameEndScoreEl.textContent = getUIText('gameEndScore', score);
+    gameEndCorrectEl.textContent = getUIText('gameEndCorrect', questionsAnsweredCorrectly);
+    gameEndIncorrectEl.textContent = getUIText('gameEndIncorrect', incorrectAnswers);
     gameEndPopup.style.display = 'block';
 }
 
@@ -525,9 +894,15 @@ async function initializeGame() {
             gameIsOver = true; 
             return; 
         }
-        
+
         // Paddle controls - only if game is active and no popups are shown
-        if (!quizActive && !gameIsOver && !gameEndNavActive) { 
+        if (!quizActive && !gameIsOver && !gameEndNavActive) {
+            if (event.code === 'Space') {
+                event.preventDefault();
+                if (ballStuckToPaddle) releaseBallFromPaddle();
+                else shootLasers();
+                return;
+            }
             if (event.key === "ArrowLeft") arrowLeftPressed = true;
             else if (event.key === "ArrowRight") arrowRightPressed = true;
         }
@@ -561,9 +936,9 @@ function gameLoop() {
 
 // ----------- NEU: Steuerung für Startbildschirm und Spielstart ------------
 
-const startScreen = document.getElementById('startScreen');
-const startButton = document.getElementById('startButton');
 if (gameContainer) gameContainer.style.display = 'none'; // Spiel-Canvas ausblenden
+
+applyLanguageToUI();
 
 // Nur laden, nicht starten
 async function preloadGameAssets() {

@@ -7,34 +7,34 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-	<div id="startScreen" style="display: flex;">
-		<div id="startScreenContent">
-			<div id="startScreenTextLine1">Willkommen zum Breakout Arzttarif!</div>
-			<div id="startScreenTextLine2">Zerstöre Steine und beantworte Quizfragen, um Punkte zu sammeln.</div>
-			<button id="startButton" disabled>Spiel und Quiz beginnen</button>
-		</div>
-	</div>
-    <div id="loadingScreen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(200, 200, 200, 0.8); display: flex; justify-content: center; align-items: center; font-size: 24px; z-index: 1000;">Spiel und Quiz wird aufgestartet</div>
+        <div id="startScreen" style="display: flex;">
+                <div id="startScreenContent">
+                        <div id="startScreenTextLine1" data-i18n="startTitle"></div>
+                        <div id="startScreenTextLine2" data-i18n="startSubtitle"></div>
+                        <button id="startButton" disabled data-i18n="startButton"></button>
+                </div>
+        </div>
+    <div id="loadingScreen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(200, 200, 200, 0.8); display: flex; justify-content: center; align-items: center; font-size: 24px; z-index: 1000;" data-i18n="loading"></div>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div id="scoreDisplay">Punktestand: 0</div>
+        <div id="scoreDisplay"></div>
     </div>
 
     <div id="quizPopup" style="display: none;">
-        <div id="quizTitle">Quiz Titel</div>
-        <div id="quizQuestion">Quiz Frage</div>
+        <div id="quizTitle"></div>
+        <div id="quizQuestion"></div>
         <div id="quizAnswers">
             <!-- Answer buttons will be populated by JavaScript -->
         </div>
-        <div id="quizFeedback">Feedback</div>
+        <div id="quizFeedback"></div>
     </div>
 
     <div id="gameEndPopup" style="display: none;">
-        <h2 id="gameEndTitle">Spielende</h2>
-        <p id="gameEndScore">Punktestand: 0</p>
-        <p id="gameEndCorrect">Richtig beantwortet: 0</p>
-        <p id="gameEndIncorrect">Falsch beantwortet: 0</p>
-        <button id="gameEndPlayAgainButton">Nochmal spielen</button>
+        <h2 id="gameEndTitle" data-i18n="gameEndTitle"></h2>
+        <p id="gameEndScore" data-i18n="gameEndScore"></p>
+        <p id="gameEndCorrect" data-i18n="gameEndCorrect"></p>
+        <p id="gameEndIncorrect" data-i18n="gameEndIncorrect"></p>
+        <button id="gameEndPlayAgainButton" data-i18n="gameEndReplay"></button>
     </div>
 
     <script src="questions.js"></script>
